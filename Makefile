@@ -1,5 +1,6 @@
 JS_FILES = js/computed-style.js \
-		   js/es5-shim/es5-shim.min.js
+		   js/css-properties.js \
+		   js/es5-shim/es5-shim.js
 
 JS_COMPILER ?= java -jar tools/yuicompressor-2.4.2.jar
 
