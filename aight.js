@@ -1,33 +1,3 @@
-if (!window.getComputedStyle) {
-    window.getComputedStyle = function(el, pseudo) {
-        this.el = el;
-        this.getPropertyValue = function(prop) {
-            var re = /(\-([a-z]){1})/g;
-            if (prop == 'float') prop = 'styleFloat';
-            if (re.test(prop)) {
-                prop = prop.replace(re, function () {
-                    return arguments[2].toUpperCase();
-                });
-            }
-            return (el && el.currentStyle)
-                ? el.currentStyle[prop]
-                  ? el.currentStyle[prop]
-                  : null
-                : null;
-        };
-        return this;
-    };
-}
-
-CSSStyleDeclaration.prototype.getProperty = function(a) {
-    return this.getAttribute(a);
-};
-CSSStyleDeclaration.prototype.setProperty = function(a,b) {
-    return this.setAttribute(a,b);
-}
-CSSStyleDeclaration.prototype.removeProperty = function(a) {
-    return this.removeAttribute(a);
-}
 // vim: ts=4 sts=4 sw=4 expandtab
 // -- kriskowal Kris Kowal Copyright (C) 2009-2011 MIT License
 // -- tlrobinson Tom Robinson Copyright (C) 2009-2010 MIT License (Narwhal Project)
@@ -1133,3 +1103,35 @@ var toObject = function (o) {
     return Object(o);
 };
 });
+if (!window.getComputedStyle) {
+    window.getComputedStyle = function(el, pseudo) {
+        this.el = el;
+        this.getPropertyValue = function(prop) {
+            var re = /(\-([a-z]){1})/g;
+            if (prop == 'float') prop = 'styleFloat';
+            if (re.test(prop)) {
+                prop = prop.replace(re, function () {
+                    return arguments[2].toUpperCase();
+                });
+            }
+            return (el && el.currentStyle)
+                ? el.currentStyle[prop]
+                  ? el.currentStyle[prop]
+                  : null
+                : null;
+        };
+        return this;
+    };
+}
+
+if (!CSSStyleDeclaration.prototype.getProperty) {
+    CSSStyleDeclaration.prototype.getProperty = function(a) {
+        return this.getAttribute(a);
+    };
+    CSSStyleDeclaration.prototype.setProperty = function(a, b) {
+        return this.setAttribute(a,b);
+    };
+    CSSStyleDeclaration.prototype.removeProperty = function(a) {
+        return this.removeAttribute(a);
+    };
+}
