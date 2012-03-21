@@ -1,3 +1,6 @@
 [submodule "js/shims/es5-shim"]
 	path = js/shims/es5-shim
 	url = git://github.com/kriskowal/es5-shim.git
+[submodule "css/pie"]
+	path = css/pie
+	url = git://github.com/lojjic/PIE.git
