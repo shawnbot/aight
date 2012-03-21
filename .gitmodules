@@ -1,5 +1,5 @@
-[submodule "js/shims/es5-shim"]
-	path = js/shims/es5-shim
+[submodule "js/es5-shim"]
+	path = js/es5-shim
 	url = git://github.com/kriskowal/es5-shim.git
 [submodule "css/pie"]
 	path = css/pie
