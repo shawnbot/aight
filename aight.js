@@ -1273,6 +1273,12 @@ if (!CSSStyleDeclaration.prototype.getProperty) {
         return this.removeAttribute(a);
     };
 }
+if (!document.createElementNS) {
+    document.createElementNS = function(ns, name) {
+        if (ns) throw "sorry, this browser does not support namespaces";
+        return document.createElement(name);
+    };
+}
 if (!Element.prototype.addEventListener) {
     Element.prototype.addEventListener = function(type, fn, bubble) {
         this["e" + type + fn] = fn;
