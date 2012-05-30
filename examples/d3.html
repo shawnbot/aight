@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <!--[if lt IE 9]><script type="text/javascript" src="../aight.js"></script><![endif]-->
+        <script type="text/javascript" src="https://raw.github.com/mbostock/d3/master/d3.v2.js"></script>
+        <style type="text/css">
+            #colored-boxes span {
+                margin-right: 2px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>d3 + aight</h1>
+
+        <h2>Text replacement</h2>
+        <p>This is a random number: <tt id="random-number"></tt></p>
+        <script type="text/javascript" defer>
+            d3.select("#random-number").text(Math.random() * 1000);
+        </script>
+
+        <h2>Data binding</h2>
+        <p>There should be 5 list items here with text in them:</p>
+        <ol id="text-list"></ol>
+        <script type="text/javascript" defer>
+            d3.select("#text-list")
+                .selectAll("li")
+                .data(["foo", "bar", "baz", "qux", "quux"])
+                .enter().append("li")
+                    .text(function(d) { return d; });
+        </script>
+
+        <h2>Inline styles</h2>
+        <p>There should be a series of colored boxes below:</p>
+        <p id="colored-boxes"></p>
+        <script type="text/javascript" defer>
+            var scale = d3.scale.linear()
+                    .domain([0, 1])
+                    .range(["#f99", "#9cf"]),
+                numbers = d3.range(0, 1, .1).map(scale);
+
+            d3.select("#colored-boxes")
+                .selectAll("span")
+                .data(numbers)
+                .enter().append("span")
+                    .style("display", "inline-block")
+                    .style("width", "20px")
+                    .style("height", "20px")
+                    .style("background", function(d) { return d; });
+        </script>
+
+    </body>
+</html>
