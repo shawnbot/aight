@@ -1,4 +1,5 @@
 JS_FILES = \
+	js/classList/classList.js \
 	js/es5-shim/es5-shim.js \
 	js/computed-style.js \
 	js/css-properties.js \
