@@ -3,7 +3,7 @@ if (!CSSStyleDeclaration.prototype.getProperty) {
         return this.getAttribute(a);
     };
     CSSStyleDeclaration.prototype.setProperty = function(a, b) {
-        return this.setAttribute(a,b);
+        return this.setAttribute(String(a), b);
     };
     CSSStyleDeclaration.prototype.removeProperty = function(a) {
         return this.removeAttribute(a);
