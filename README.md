@@ -13,6 +13,13 @@ rely on those interfaces). It includes:
 * A shim for [CSSStyleDeclaration](http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSStyleDeclaration)'s
   setProperty() and removeProperty() methods
 
+* A shim for *
+  [document.createElementNS()](http://www.w3.org/TR/DOM-Level-2-Core/core.html#ID-DocCrElNS),
+  which throws an error if you pass it an actual namespace (which IE8 doesn't
+  support). This merely provides a facade of interoperability with d3, which
+  calls createElementNS() even in cases where the parent's namespaceURI is
+  undefined (as is the case in HTML5, but *not* XHTML).
+
 * A shim for [window.getComputedStyle()](http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSview-getComputedStyle)
 
 * A shim for the Element prototype's addEventListener() and
