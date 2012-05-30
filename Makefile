@@ -1,8 +1,9 @@
 JS_FILES = \
 	js/es5-shim/es5-shim.js \
 	js/computed-style.js \
-	js/element-properties.js \
-	js/css-properties.js
+	js/css-properties.js \
+	js/element-events.js \
+	js/element-properties.js
 
 JS_COMPILER ?= java -jar tools/yuicompressor-2.4.2.jar
 
