@@ -6,12 +6,34 @@
         <!--[if lt IE 9]><script type="text/javascript" src="../aight.js"></script><![endif]-->
         <script type="text/javascript" src="https://raw.github.com/shawnbot/d3/master/d3.v2.min.js"></script>
         <style type="text/css">
+            body {
+                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                font-size: 12px;
+                line-height: 18px:
+            }
+
+            h2 {
+                margin-bottom: 0;
+            }
+
             .error {
                 background: #fcc;
                 padding: 2px 4px;
             }
-            #colored-boxes span {
+
+            span {
                 margin-right: 2px;
+            }
+
+            #classed-boxes span {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                background: black;
+            }
+
+            #classed-boxes .red {
+                background: red;
             }
         </style>
     </head>
@@ -43,12 +65,26 @@
 
             items.sort();
 
-            console.log("sorted c,a,b: ", ["c", "a", "b"].sort());
-
         })();
         </script>
         <p class="error"><strong>NOTE:</strong> <tt>d3.selection.sort()</tt> does
         <strong>not</strong> work in IE8 at this time.</p>
+
+        <h2>Classed elements</h2>
+        <p>Every other one of these boxes should be red:</p>
+        <p id="classed-boxes">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+        </p>
+        <script type="text/javascript" defer>
+        (function() {
+
+            d3.selectAll("#classed-boxes span")
+                .classed("red", function(d, i) {
+                    return (i % 2 === 0) ? true : false;
+                });
+
+        })();
+        </script>
 
         <h2>Scales, inline styles</h2>
         <p>There should be a series of colored boxes below:</p>
