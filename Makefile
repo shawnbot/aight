@@ -3,6 +3,7 @@ JS_FILES = \
 	js/es5-shim/es5-shim.js \
 	js/computed-style.js \
 	js/css-properties.js \
+	js/element-createElementNS.js \
 	js/element-events.js \
 	js/element-properties.js
 
