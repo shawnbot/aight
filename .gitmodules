@@ -4,3 +4,6 @@
 [submodule "css/pie"]
 	path = css/pie
 	url = git://github.com/lojjic/PIE.git
+[submodule "js/classList"]
+	path = js/classList
+	url = https://github.com/eligrey/classList.js.git
