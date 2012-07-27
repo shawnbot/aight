@@ -1,5 +1,6 @@
 // from Eli Grey @ http://eligrey.com/blog/post/textcontent-in-ie8
 if (Object.defineProperty && Object.getOwnPropertyDescriptor &&
+    Object.getOwnPropertyDescriptor(Element.prototype, "textContent") &&
     !Object.getOwnPropertyDescriptor(Element.prototype, "textContent").get) {
     (function() {
         var innerText = Object.getOwnPropertyDescriptor(Element.prototype, "innerText");
