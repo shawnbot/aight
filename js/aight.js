@@ -1,3 +1,11 @@
+/*
+ * aight v1.0
+ *
+ * <http://github.com/shawnbot/aight/>
+ *
+ * Aight is a collection of JavaScript shims that make IE8 behave like a modern
+ * browser (sans SVG).
+ */
 var aight = (function() {
     var nav = navigator.appName,
         version = navigator.appVersion,
