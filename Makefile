@@ -1,4 +1,5 @@
 JS_FILES = \
+	js/aight.js \
 	js/classList/classList.js \
 	js/es5-shim/es5-shim.js \
 	js/computed-style.js \
@@ -7,7 +8,7 @@ JS_FILES = \
 	js/element-events.js \
 	js/element-properties.js
 
-JS_COMPILER ?= java -jar tools/yuicompressor-2.4.2.jar
+JS_COMPILER ?= uglifyjs
 
 all: aight.js aight.min.js \
    css/pie/build/PIE_IE678.js
