@@ -1,5 +1,5 @@
-if (!CSSStyleDeclaration.prototype.getProperty) {
-    CSSStyleDeclaration.prototype.getProperty = function(a) {
+if (!CSSStyleDeclaration.prototype.getPropertyValue) {
+    CSSStyleDeclaration.prototype.getPropertyValue = function(a) {
         return this.getAttribute(a);
     };
     CSSStyleDeclaration.prototype.setProperty = function(a, b) {
