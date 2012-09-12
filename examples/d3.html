@@ -3,8 +3,14 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-        <!--[if lt IE 9]><script type="text/javascript" src="../aight.js"></script><![endif]-->
-        <script type="text/javascript" src="https://raw.github.com/mbostock/d3/master/d3.v2.min.js"></script>
+        <script type="text/javascript">
+            var proto = CSSStyleDeclaration.prototype;
+            for (var key in proto) {
+                console.log(key, proto[key]);
+            }
+        </script>
+        <script type="text/javascript" src="../aight.js"></script>
+        <script type="text/javascript" src="http://d3js.org/d3.v2.min.js"></script>
         <style type="text/css">
             body {
                 font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
