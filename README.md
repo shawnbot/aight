@@ -1,6 +1,6 @@
 # It's Aight
 Aight is a collection of shims and polyfills that get IE8 up to speed with
-a bare minimul of HTML5 compatibility, providing all of the interfaces
+a bare minimum of HTML5 compatibility, providing all of the interfaces
 necessary to do HTML-only DOM manipulation with d3.js (and other libraries that
 rely on those interfaces). It includes:
 
