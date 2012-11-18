@@ -10,7 +10,11 @@
             }
         </script>
         <script type="text/javascript" src="../aight.js"></script>
+        <script type="text/javascript">
+          aight.browser.ie8 = true;
+        </script>
         <script type="text/javascript" src="http://d3js.org/d3.v2.min.js"></script>
+        <script type="text/javascript" src="../aight.d3.js"></script>
         <style type="text/css">
             body {
                 font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -147,5 +151,35 @@
         })();
         </script>
 
+        <h2>Backgrounds</h2>
+        <p>Tests for background properties in IE8 (with <tt>aight.d3.js</tt>):</p>
+
+        <div class="bg" id="bg-color">color: red</div>
+        <div class="bg" id="bg-position">position: bottom right</div>
+        <div class="bg" id="bg-image">image: a.png<br>position: bottom left</div>
+
+        <script type="text/javascript" defer>
+
+          d3.selectAll(".bg")
+            .style("width", "150px")
+            .style("height", "150px")
+            .style("margin", "10px 0")
+            .style("background", "#f90 url(http://www.imagemagick.org/Usage/formats/circle.png) no-repeat center");
+
+          var bg = d3.select("#bg-color")
+            .style("background-color", "red");
+          console.log("red?", bg.style("background-color"));
+
+          bg = d3.select("#bg-position")
+            .style("background-position", "bottom right");
+          console.log("bottom right?", bg.style("background-position"));
+
+          bg = d3.select("#bg-image")
+            .style("background-position", "bottom left")
+            .style("background-image", "url(http://www.imagemagick.org/Usage/formats/a.png)");
+          console.log("bottom left?", bg.style("background-position"));
+          console.log("a.png?", bg.style("background-image"));
+
+        </script>
     </body>
 </html>
