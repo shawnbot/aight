@@ -10,7 +10,7 @@ JS_FILES = \
 
 JS_COMPILER ?= uglifyjs
 
-all: aight.js aight.min.js \
+all: aight.js aight.min.js aight.d3.min.js \
    css/pie/build/PIE_IE678.js
 
 clean:
@@ -19,7 +19,7 @@ clean:
 aight.js: $(JS_FILES)
 	cat $(JS_FILES) > $@
 
-aight.min.js: aight.js
+%.min.js: %.js
 	$(JS_COMPILER) $< > $@
 
 css/pie/build/PIE_IE678.js:
