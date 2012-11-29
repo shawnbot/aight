@@ -1,4 +1,5 @@
-# It's Aight
+# <img src="https://raw.github.com/shawnbot/aight/master/assets/aight.png">
+
 Aight is a collection of shims and polyfills that get IE8 up to speed with
 a bare minimum of HTML5 compatibility, providing all of the interfaces
 necessary to do HTML-only DOM manipulation with d3.js (and other libraries that
