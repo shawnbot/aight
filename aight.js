@@ -1,5 +1,5 @@
 /*
- * aight v1.1.0
+ * aight v1.1.1
  *
  * <http://github.com/shawnbot/aight/>
  *
@@ -31,10 +31,9 @@
     })();
 
 })(this);
-
 /*
  * classList.js: Cross-browser full element.classList implementation.
- * 2011-06-15
+ * 2012-11-15
  *
  * By Eli Grey, http://eligrey.com
  * Public Domain.
@@ -50,6 +49,8 @@ if (typeof document !== "undefined" && !("classList" in document.createElement("
 (function (view) {
 
 "use strict";
+
+if (!('HTMLElement' in view) && !('Element' in view)) return;
 
 var
 	  classListProp = "classList"
@@ -121,28 +122,65 @@ classListProto.contains = function (token) {
 	token += "";
 	return checkTokenAndGetIndex(this, token) !== -1;
 };
-classListProto.add = function (token) {
-	token += "";
-	if (checkTokenAndGetIndex(this, token) === -1) {
-		this.push(token);
+classListProto.add = function () {
+	var
+		  tokens = arguments
+		, i = 0
+		, l = tokens.length
+		, token
+		, updated = false
+	;
+	do {
+		token = tokens[i] + "";
+		if (checkTokenAndGetIndex(this, token) === -1) {
+			this.push(token);
+			updated = true;
+		}
+	}
+	while (++i < l);
+
+	if (updated) {
 		this._updateClassName();
 	}
 };
-classListProto.remove = function (token) {
-	token += "";
-	var index = checkTokenAndGetIndex(this, token);
-	if (index !== -1) {
-		this.splice(index, 1);
+classListProto.remove = function () {
+	var
+		  tokens = arguments
+		, i = 0
+		, l = tokens.length
+		, token
+		, updated = false
+	;
+	do {
+		token = tokens[i] + "";
+		var index = checkTokenAndGetIndex(this, token);
+		if (index !== -1) {
+			this.splice(index, 1);
+			updated = true;
+		}
+	}
+	while (++i < l);
+
+	if (updated) {
 		this._updateClassName();
 	}
 };
-classListProto.toggle = function (token) {
+classListProto.toggle = function (token, forse) {
 	token += "";
-	if (checkTokenAndGetIndex(this, token) === -1) {
-		this.add(token);
-	} else {
-		this.remove(token);
+
+	var
+		  result = this.contains(token)
+		, method = result ?
+			forse !== true && "remove"
+		:
+			forse !== false && "add"
+	;
+
+	if (method) {
+		this[method](token);
 	}
+
+	return result;
 };
 classListProto.toString = function () {
 	return this.join(" ");
@@ -1274,27 +1312,75 @@ var toObject = function (o) {
     return Object(o);
 };
 });
-if (!window.getComputedStyle) {
-    window.getComputedStyle = function(el, pseudo) {
-        this.el = el;
-        this.getPropertyValue = function(prop) {
-            var re = /(\-([a-z]){1})/g;
-            if (prop == 'float') prop = 'styleFloat';
-            if (re.test(prop)) {
-                prop = prop.replace(re, function () {
-                    return arguments[2].toUpperCase();
-                });
-            }
-            return (el && el.currentStyle)
-                ? el.currentStyle[prop]
-                  ? el.currentStyle[prop]
-                  : null
-                : null;
-        };
-        return this;
-    };
-}
+!('getComputedStyle' in this) && (this.getComputedStyle = (function () {
+    function getPixelSize(element, style, property, fontSize) {
+		var
+		sizeWithSuffix = style[property],
+		size = parseFloat(sizeWithSuffix),
+		suffix = sizeWithSuffix.split(/\d/)[0],
+		rootSize;
 
+		fontSize = fontSize != null ? fontSize : /%|em/.test(suffix) && element.parentElement ? getPixelSize(element.parentElement, element.parentElement.currentStyle, 'fontSize', null) : 16;
+		rootSize = property == 'fontSize' ? fontSize : /width/i.test(property) ? element.clientWidth : element.clientHeight;
+
+		return (suffix == 'em') ? size * fontSize : (suffix == 'in') ? size * 96 : (suffix == 'pt') ? size * 96 / 72 : (suffix == '%') ? size / 100 * rootSize : size;
+	}
+
+	function setShortStyleProperty(style, property) {
+		var
+		borderSuffix = property == 'border' ? 'Width' : '',
+		t = property + 'Top' + borderSuffix,
+		r = property + 'Right' + borderSuffix,
+		b = property + 'Bottom' + borderSuffix,
+		l = property + 'Left' + borderSuffix;
+
+		style[property] = (style[t] == style[r] == style[b] == style[l] ? [style[t]]
+		: style[t] == style[b] && style[l] == style[r] ? [style[t], style[r]]
+		: style[l] == style[r] ? [style[t], style[r], style[b]]
+		: [style[t], style[r], style[b], style[l]]).join(' ');
+	}
+
+	function CSSStyleDeclaration(element) {
+		var
+		currentStyle = element.currentStyle,
+		style = this,
+		fontSize = getPixelSize(element, currentStyle, 'fontSize', null);
+
+		for (property in currentStyle) {
+			if (/width|height|margin.|padding.|border.+W/.test(property) && style[property] !== 'auto') {
+				style[property] = getPixelSize(element, currentStyle, property, fontSize) + 'px';
+			} else if (property === 'styleFloat') {
+				style['float'] = currentStyle[property];
+			} else {
+				style[property] = currentStyle[property];
+			}
+		}
+
+		setShortStyleProperty(style, 'margin');
+		setShortStyleProperty(style, 'padding');
+		setShortStyleProperty(style, 'border');
+
+		style.fontSize = fontSize + 'px';
+
+		return style;
+	}
+
+	CSSStyleDeclaration.prototype = {
+		constructor: CSSStyleDeclaration,
+		getPropertyPriority: function () {},
+		getPropertyValue: function () {},
+		item: function () {},
+		removeProperty: function () {},
+		setProperty: function () {},
+		getPropertyCSSValue: function () {}
+	};
+
+	function getComputedStyle(element) {
+		return new CSSStyleDeclaration(element);
+	}
+
+	return getComputedStyle;
+})(this));
 if (!CSSStyleDeclaration.prototype.getPropertyValue) {
     CSSStyleDeclaration.prototype.getPropertyValue = function(a) {
         return this.getAttribute(a);
