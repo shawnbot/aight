@@ -1,179 +1,202 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-        <script type="text/javascript" src="../aight.js"></script>
-        <script type="text/javascript">
-          aight.browser.ie8 = true;
-        </script>
-        <script type="text/javascript" src="http://d3js.org/d3.v2.min.js"></script>
-        <script type="text/javascript" src="../aight.d3.js"></script>
-        <style type="text/css">
-            body {
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-                font-size: 12px;
-                line-height: 18px:
-            }
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <script src="../aight.js"></script>
+    <!-- <script>aight.browser.ie8 = true;</script> -->
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="../aight.d3.js"></script>
+    <style type="text/css">
 
-            h2 {
-                margin-bottom: 0;
-            }
+      body {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 12px;
+        line-height: 18px:
+      }
 
-            .error {
-                background: #fcc;
-                padding: 2px 4px;
-            }
+      h2 {
+        margin-bottom: 0;
+      }
 
-            span {
-                margin-right: 2px;
-            }
+      .error {
+        background: #fcc;
+        padding: 2px 4px;
+      }
 
-            #classed-boxes span {
-                display: inline-block;
-                width: 20px;
-                height: 20px;
-                background: black;
-            }
+      span {
+        margin-right: 2px;
+      }
 
-            #classed-boxes .red {
-                background: red;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>d3 + aight</h1>
+      #classed-boxes span {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        background: black;
+      }
 
-        <h2>Text replacement</h2>
-        <p>This is a random number: <tt id="random-number"></tt></p>
-        <script type="text/javascript" defer>
-        (function() {
+      #classed-boxes .red {
+        background: red;
+      }
 
-             d3.select("#random-number")
-                 .text(Math.random() * 1000);
+      #opacity > span {
+      }
 
-        })();
-        </script>
+    </style>
+  </head>
+  <body>
+    <h1>d3 + aight</h1>
 
-        <h2>Data binding, sorting</h2>
-        <p>There should be 4 list items here with text in them, sorted naturally ascending:</p>
-        <ol id="text-list"></ol>
-        <script type="text/javascript" defer>
-        (function() {
+    <h2>Text replacement</h2>
+    <p>This is a random number: <tt id="random-number"></tt></p>
+    <script defer>
+    (function() {
 
-            var items = d3.select("#text-list")
-                .selectAll("li")
-                .data(["foo", "bar", "baz", "qux"])
-                .enter().append("li")
-                    .text(function(d) { return d; });
+       d3.select("#random-number")
+         .text(Math.random() * 1000);
 
-            items.sort();
+    })();
+    </script>
 
-        })();
-        </script>
-        <p class="error"><strong>NOTE:</strong> <tt>d3.selection.sort()</tt> does
-        <strong>not</strong> work in IE8 at this time.</p>
+    <h2>Data binding, sorting</h2>
+    <p>There should be 4 list items here with text in them, sorted naturally ascending:</p>
+    <ol id="text-list"></ol>
+    <script defer>
+    (function() {
 
-        <h2>Classed elements</h2>
-        <p>Every other one of these boxes should be red:</p>
-        <p id="classed-boxes">
-            <span></span><span></span><span></span><span></span><span></span><span></span>
-        </p>
-        <script type="text/javascript" defer>
-        (function() {
+      var items = d3.select("#text-list")
+        .selectAll("li")
+        .data(["foo", "bar", "baz", "qux"])
+        .enter().append("li")
+          .text(function(d) { return d; });
 
-            d3.selectAll("#classed-boxes span")
-                .classed("red", function(d, i) {
-                    return (i % 2 === 0) ? true : false;
-                });
+      items.sort();
 
-        })();
-        </script>
+    })();
+    </script>
+    <p class="error"><strong>NOTE:</strong> <tt>d3.selection.sort()</tt> does
+    <strong>not</strong> work in IE8 at this time.</p>
 
-        <h2>Scales, inline styles</h2>
-        <p>There should be a series of colored boxes below:</p>
-        <p id="colored-boxes"></p>
-        <script type="text/javascript" defer>
-        (function() {
+    <h2>Classed elements</h2>
+    <p>Every other one of these boxes should be red:</p>
+    <p id="classed-boxes">
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+    </p>
+    <script defer>
+    (function() {
 
-            var scale = d3.scale.linear()
-                    .domain([0, 1])
-                    .range(["#f99", "#9cf"]),
-                numbers = d3.range(0, 1, .1).map(scale);
+        d3.selectAll("#classed-boxes span")
+            .classed("red", function(d, i) {
+                return (i % 2 === 0) ? true : false;
+            });
 
-            d3.select("#colored-boxes")
-                .selectAll("span")
-                .data(numbers)
-                .enter().append("span")
-                    .style("display", "inline-block")
-                    .style("width", "20px")
-                    .style("height", "20px")
-                    .style("background", function(d) { return d; });
+    })();
+    </script>
 
-        })();
-        </script>
+    <h2>Scales, inline styles</h2>
+    <p>There should be a series of colored boxes below:</p>
+    <p id="colored-boxes"></p>
+    <script defer>
+    (function() {
 
-        <h2>DOM data binding with map(), text transitions</h2>
-        <p>These numbers should transition from 0 over 10 seconds:</p>
-        <ul id="transition-text">
-            <li data-end="1000">0</li>
-            <li data-end="5000">0</li>
-            <li data-end="1000000">0</li>
-        </ul>
-        <script type="text/javascript" defer>
-        (function() {
+      var scale = d3.scale.linear()
+            .domain([0, 1])
+            .range(["#f99", "#9cf"]),
+          numbers = d3.range(0, 1, .1).map(scale);
 
-            var format = d3.format(",d"),
-                numbers = d3.selectAll("#transition-text li")
-                    .map(function() {
-                        return {
-                            start: ~~this.textContent,
-                            end: ~~this.getAttribute("data-end")
-                        };
-                    });
+      d3.select("#colored-boxes")
+        .selectAll("span")
+        .data(numbers)
+        .enter().append("span")
+          .style("display", "inline-block")
+          .style("width", "20px")
+          .style("height", "20px")
+          .style("background", function(d) { return d; });
 
-            numbers.transition()
-                .ease("linear")
-                .duration(2000)
-                .tween("text", function(d) {
-                    var i = d3.interpolate(d.start, d.end);
-                    return function(t) {
-                        this.textContent = format(i(t));
-                    };
-                });
+    })();
+    </script>
 
-        })();
-        </script>
+    <h2>DOM data binding with map(), text transitions</h2>
+    <p>These numbers should transition from 0 over 10 seconds:</p>
+    <ul id="transition-text">
+      <li data-end="1000">0</li>
+      <li data-end="5000">0</li>
+      <li data-end="1000000">0</li>
+    </ul>
+    <script defer>
+    (function() {
 
-        <h2>Backgrounds</h2>
-        <p>Tests for background properties in IE8 (with <tt>aight.d3.js</tt>):</p>
+      var format = d3.format(",d"),
+          numbers = d3.selectAll("#transition-text li")
+            .datum(function() {
+              return {
+                start: +this.textContent,
+                end: +this.getAttribute("data-end")
+              };
+            });
 
-        <div class="bg" id="bg-color">color: red</div>
-        <div class="bg" id="bg-position">position: bottom right</div>
-        <div class="bg" id="bg-image">image: a.png<br>position: bottom left</div>
+      numbers.transition()
+        .ease("linear")
+        .duration(2000)
+        .tween("text", function(d) {
+          var i = d3.interpolate(d.start, d.end);
+          return function(t) {
+            this.textContent = format(i(t));
+          };
+        });
 
-        <script type="text/javascript" defer>
+    })();
+    </script>
 
-          d3.selectAll(".bg")
-            .style("width", "150px")
-            .style("height", "150px")
-            .style("margin", "10px 0")
-            .style("background", "#f90 url(http://www.imagemagick.org/Usage/formats/circle.png) no-repeat center");
+    <h2>Backgrounds</h2>
+    <p>Tests for background properties in IE8 (with <tt>aight.d3.js</tt>):</p>
 
-          var bg = d3.select("#bg-color")
-            .style("background-color", "red");
-          console.log("red?", bg.style("background-color"));
+    <div class="bg" id="bg-color">color: red</div>
+    <div class="bg" id="bg-position">position: bottom right</div>
+    <div class="bg" id="bg-image">image: a.png<br>position: bottom left</div>
 
-          bg = d3.select("#bg-position")
-            .style("background-position", "bottom right");
-          console.log("bottom right?", bg.style("background-position"));
+    <script defer>
+    (function() {
 
-          bg = d3.select("#bg-image")
-            .style("background-position", "bottom left")
-            .style("background-image", "url(http://www.imagemagick.org/Usage/formats/a.png)");
-          console.log("bottom left?", bg.style("background-position"));
-          console.log("a.png?", bg.style("background-image"));
+      d3.selectAll(".bg")
+        .style("width", "150px")
+        .style("height", "150px")
+        .style("margin", "10px 0")
+        .style("background", "#f90 url(http://www.imagemagick.org/Usage/formats/circle.png) no-repeat center");
 
-        </script>
-    </body>
+      var bg = d3.select("#bg-color")
+        .style("background-color", "red");
+      console.log("red?", bg.style("background-color"));
+
+      bg = d3.select("#bg-position")
+        .style("background-position", "bottom right");
+      console.log("bottom right?", bg.style("background-position"));
+
+      bg = d3.select("#bg-image")
+        .style("background-position", "bottom left")
+        .style("background-image", "url(http://www.imagemagick.org/Usage/formats/a.png)");
+      console.log("bottom left?", bg.style("background-position"));
+      console.log("a.png?", bg.style("background-image"));
+
+    })();
+    </script>
+
+    <h2>Opacity</h2>
+    <p>Tests for the <tt>opacity</tt> style shim.</p>
+
+    <div id="opacity"></div>
+    <script defer>
+    (function() {
+
+      d3.select("#opacity")
+        .selectAll("span")
+          .data(d3.range(0, 1.1, .1))
+          .enter()
+          .append("span")
+          .style("opacity", function(d) { return d; })
+          .text(function(d) { return d * 100 + "%"; });
+
+    })();
+    </script>
+  </body>
 </html>
