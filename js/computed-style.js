@@ -1,5 +1,5 @@
 // <window>.getComputedStyle
-Window.prototype.getComputedStyle = (function () {
+!('getComputedStyle' in Window.prototype) && (Window.prototype.getComputedStyle = (function () {
 	var Push = Array.prototype.push;
 
 	function getComputedStylePixel(element, property, fontSize) {
@@ -88,4 +88,4 @@ Window.prototype.getComputedStyle = (function () {
 	return function (element) {
 		return new CSSStyleDeclaration(element);
 	};
-})();
+})());
