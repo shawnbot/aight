@@ -67,9 +67,11 @@
 			throw Error('NotSupportedError: DOM Exception 9');
 		},
 		getPropertyValue: function (property) {
-			return this[property.replace(/-\w/g, function (match) {
+			property = property.replace(/-\w/g, function (match) {
 				return match[1].toUpperCase();
-			})];
+			});
+			return (typeof this[property] === 'function' ||
+				property.match(/^(?:cssText|length|\d+)$/)) ? '' : this[property];
 		},
 		item: function (index) {
 			return this[index];
