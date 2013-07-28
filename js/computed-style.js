@@ -67,6 +67,9 @@
 			throw Error('NotSupportedError: DOM Exception 9');
 		},
 		getPropertyValue: function (property) {
+			if (property === undefined) {
+				throw Error('TypeError: Not enough arguments to CSSStyleDeclaration.getPropertyValue');
+			}
 			property = property.replace(/-\w/g, function (match) {
 				return match[1].toUpperCase();
 			});
@@ -74,6 +77,9 @@
 				property.match(/^(?:cssText|length|\d+)$/)) ? '' : this[property];
 		},
 		item: function (index) {
+			if (property === undefined) {
+				throw Error('TypeError: Not enough arguments to CSSStyleDeclaration.item');
+			}
 			return this[parseInt(index, 10)];
 		},
 		removeProperty: function () {
