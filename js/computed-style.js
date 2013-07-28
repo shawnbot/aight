@@ -72,7 +72,7 @@
 			})];
 		},
 		item: function (index) {
-			return this[index];
+			return this[parseInt(index, 10)];
 		},
 		removeProperty: function () {
 			throw Error('NoModificationAllowedError: DOM Exception 7');
