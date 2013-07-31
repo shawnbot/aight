@@ -1,5 +1,5 @@
 /*
- * aight v1.1.1
+ * aight v1.2.1
  *
  * <http://github.com/shawnbot/aight/>
  *

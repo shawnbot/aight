@@ -1,5 +1,5 @@
 /*
- * aight v1.1.1
+ * aight v1.2.1
  *
  * <http://github.com/shawnbot/aight/>
  *
@@ -1596,12 +1596,20 @@ var toObject = function (o) {
 			throw Error('NotSupportedError: DOM Exception 9');
 		},
 		getPropertyValue: function (property) {
-			return this[property.replace(/-\w/g, function (match) {
+			if (property === undefined) {
+				throw Error('TypeError: Not enough arguments to CSSStyleDeclaration.getPropertyValue');
+			}
+			property = property.replace(/-\w/g, function (match) {
 				return match[1].toUpperCase();
-			})];
+			});
+			return (typeof this[property] === 'function' ||
+				property.match(/^(?:cssText|length|\d+)$/)) ? '' : this[property];
 		},
 		item: function (index) {
-			return this[index];
+			if (property === undefined) {
+				throw Error('TypeError: Not enough arguments to CSSStyleDeclaration.item');
+			}
+			return this[parseInt(index, 10)];
 		},
 		removeProperty: function () {
 			throw Error('NoModificationAllowedError: DOM Exception 7');
