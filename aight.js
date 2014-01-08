@@ -44,18 +44,21 @@
 
 /*! @source http://purl.eligrey.com/github/classList.js/blob/master/classList.js*/
 
-if (typeof document !== "undefined" && !("classList" in document.createElement("a"))) {
+if ("document" in self && !(
+		"classList" in document.createElement("_") &&
+		"classList" in document.createElementNS("http://www.w3.org/2000/svg", "svg")
+	)) {
 
 (function (view) {
 
 "use strict";
 
-if (!('HTMLElement' in view) && !('Element' in view)) return;
+if (!('Element' in view)) return;
 
 var
 	  classListProp = "classList"
 	, protoProp = "prototype"
-	, elemCtrProto = (view.HTMLElement || view.Element)[protoProp]
+	, elemCtrProto = view.Element[protoProp]
 	, objCtr = Object
 	, strTrim = String[protoProp].trim || function () {
 		return this.replace(/^\s+|\s+$/g, "");
@@ -95,7 +98,7 @@ var
 	}
 	, ClassList = function (elem) {
 		var
-			  trimmedClasses = strTrim.call(elem.className)
+			  trimmedClasses = strTrim.call(elem.getAttribute("class") || "")
 			, classes = trimmedClasses ? trimmedClasses.split(/\s+/) : []
 			, i = 0
 			, len = classes.length
@@ -104,7 +107,7 @@ var
 			this.push(classes[i]);
 		}
 		this._updateClassName = function () {
-			elem.className = this.toString();
+			elem.setAttribute("class", this.toString());
 		};
 	}
 	, classListProto = ClassList[protoProp] = []
@@ -207,22 +210,33 @@ if (objCtr.defineProperty) {
 }(self));
 
 }
-// Copyright 2009-2012 by contributors, MIT License
+/*!
+ * https://github.com/es-shims/es5-shim
+ * @license es5-shim Copyright 2009-2014 by contributors, MIT License
+ * see https://github.com/es-shims/es5-shim/blob/master/LICENSE
+ */
+
 // vim: ts=4 sts=4 sw=4 expandtab
 
-// Module systems magic dance
-(function (definition) {
-    // RequireJS
-    if (typeof define == "function") {
-        define(definition);
-    // YUI3
-    } else if (typeof YUI == "function") {
-        YUI.add("es5", definition);
-    // CommonJS and <script>
+//Add semicolon to prevent IIFE from being passed as argument to concated code.
+;
+
+// UMD (Universal Module Definition)
+// see https://github.com/umdjs/umd/blob/master/returnExports.js
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(factory);
+    } else if (typeof exports === 'object') {
+        // Node. Does not work with strict CommonJS, but
+        // only CommonJS-like enviroments that support module.exports,
+        // like Node.
+        module.exports = factory();
     } else {
-        definition();
-    }
-})(function () {
+        // Browser globals (root is window)
+        root.returnExports = factory();
+  }
+}(this, function () {
 
 /**
  * Brings an environment as close to ECMAScript 5 compliance
@@ -264,7 +278,7 @@ if (!Function.prototype.bind) {
         //   15.3.4.5.2.
         // 14. Set the [[HasInstance]] internal property of F as described in
         //   15.3.4.5.3.
-        var bound = function () {
+        var binder = function () {
 
             if (this instanceof bound) {
                 // 15.3.4.5.2 [[Construct]]
@@ -320,21 +334,36 @@ if (!Function.prototype.bind) {
             }
 
         };
-        if(target.prototype) {
-            Empty.prototype = target.prototype;
-            bound.prototype = new Empty();
-            // Clean up dangling references.
-            Empty.prototype = null;
-        }
-        // XXX bound.length is never writable, so don't even try
-        //
+
         // 15. If the [[Class]] internal property of Target is "Function", then
         //     a. Let L be the length property of Target minus the length of A.
         //     b. Set the length own property of F to either 0 or L, whichever is
         //       larger.
         // 16. Else set the length own property of F to 0.
+
+        var boundLength = Math.max(0, target.length - args.length);
+
         // 17. Set the attributes of the length own property of F to the values
         //   specified in 15.3.5.1.
+        var boundArgs = [];
+        for (var i = 0; i < boundLength; i++) {
+            boundArgs.push("$" + i);
+        }
+
+        // XXX Build a dynamic function with desired amount of arguments is the only 
+        // way to set the length property of a function. 
+        // In environments where Content Security Policies enabled (Chrome extensions, 
+        // for ex.) all use of eval or Function costructor throws an exception. 
+        // However in all of these environments Function.prototype.bind exists 
+        // and so this code will never be executed.
+        var bound = Function("binder", "return function(" + boundArgs.join(",") + "){return binder.apply(this,arguments)}")(binder);
+
+        if (target.prototype) {
+            Empty.prototype = target.prototype;
+            bound.prototype = new Empty();
+            // Clean up dangling references.
+            Empty.prototype = null;
+        }
 
         // TODO
         // 18. Set the [[Extensible]] internal property of F to true.
@@ -398,8 +427,10 @@ if ((supportsAccessors = owns(prototypeOfObject, "__defineGetter__"))) {
 // IE < 9 bug: [1,2].splice(0).join("") == "" but should be "12"
 if ([1,2].splice(0).length != 2) {
     var array_splice = Array.prototype.splice;
+    var array_push = Array.prototype.push;
+    var array_unshift = Array.prototype.unshift;
 
-    if(function() { // test IE < 9 to splice bug - see issue #138
+    if (function() { // test IE < 9 to splice bug - see issue #138
         function makeArray(l) {
             var a = [];
             while (l--) {
@@ -418,7 +449,7 @@ if ([1,2].splice(0).length != 2) {
         lengthBefore = array.length; //20
         array.splice(5, 0, "XXX"); // add one element
 
-        if(lengthBefore + 1 == array.length) {
+        if (lengthBefore + 1 == array.length) {
             return true;// has right splice implementation without bugs
         }
         // else {
@@ -443,26 +474,26 @@ if ([1,2].splice(0).length != 2) {
                 , addElementsCount = args.length
             ;
 
-            if(!arguments.length) {
+            if (!arguments.length) {
                 return [];
             }
 
-            if(start === void 0) { // default
+            if (start === void 0) { // default
                 start = 0;
             }
-            if(deleteCount === void 0) { // default
+            if (deleteCount === void 0) { // default
                 deleteCount = this.length - start;
             }
 
-            if(addElementsCount > 0) {
-                if(deleteCount <= 0) {
-                    if(start == this.length) { // tiny optimisation #1
-                        this.push.apply(this, args);
+            if (addElementsCount > 0) {
+                if (deleteCount <= 0) {
+                    if (start == this.length) { // tiny optimisation #1
+                        array_push.apply(this, args);
                         return [];
                     }
 
-                    if(start == 0) { // tiny optimisation #2
-                        this.unshift.apply(this, args);
+                    if (start == 0) { // tiny optimisation #2
+                        array_unshift.apply(this, args);
                         return [];
                     }
                 }
@@ -524,12 +555,24 @@ if (!Array.isArray) {
 // http://es5.github.com/#x15.4.4.18
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/forEach
 
+
 // Check failure of by-index access of string characters (IE < 9)
 // and failure of `0 in boxedString` (Rhino)
-var boxedString = Object("a"),
-    splitString = boxedString[0] != "a" || !(0 in boxedString);
+var boxedString = Object("a");
+var splitString = boxedString[0] != "a" || !(0 in boxedString);
 
-if (!Array.prototype.forEach) {
+var properlyBoxesContext = function properlyBoxed(method) {
+    // Check node 0.6.21 bug where third parameter is not boxed
+    var properlyBoxes = true;
+    if (method) {
+        method.call('foo', function (item, index, context) {
+            if (typeof context !== 'object') { properlyBoxes = false; }
+        });
+    }
+    return !!method && properlyBoxes;
+};
+
+if (!Array.prototype.forEach || !properlyBoxesContext(Array.prototype.forEach)) {
     Array.prototype.forEach = function forEach(fun /*, thisp*/) {
         var object = toObject(this),
             self = splitString && _toString(this) == "[object String]" ?
@@ -558,7 +601,7 @@ if (!Array.prototype.forEach) {
 // ES5 15.4.4.19
 // http://es5.github.com/#x15.4.4.19
 // https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/map
-if (!Array.prototype.map) {
+if (!Array.prototype.map || !properlyBoxesContext(Array.prototype.map)) {
     Array.prototype.map = function map(fun /*, thisp*/) {
         var object = toObject(this),
             self = splitString && _toString(this) == "[object String]" ?
@@ -584,7 +627,7 @@ if (!Array.prototype.map) {
 // ES5 15.4.4.20
 // http://es5.github.com/#x15.4.4.20
 // https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/filter
-if (!Array.prototype.filter) {
+if (!Array.prototype.filter || !properlyBoxesContext(Array.prototype.filter)) {
     Array.prototype.filter = function filter(fun /*, thisp */) {
         var object = toObject(this),
             self = splitString && _toString(this) == "[object String]" ?
@@ -615,7 +658,7 @@ if (!Array.prototype.filter) {
 // ES5 15.4.4.16
 // http://es5.github.com/#x15.4.4.16
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/every
-if (!Array.prototype.every) {
+if (!Array.prototype.every || !properlyBoxesContext(Array.prototype.every)) {
     Array.prototype.every = function every(fun /*, thisp */) {
         var object = toObject(this),
             self = splitString && _toString(this) == "[object String]" ?
@@ -641,7 +684,7 @@ if (!Array.prototype.every) {
 // ES5 15.4.4.17
 // http://es5.github.com/#x15.4.4.17
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/some
-if (!Array.prototype.some) {
+if (!Array.prototype.some || !properlyBoxesContext(Array.prototype.some)) {
     Array.prototype.some = function some(fun /*, thisp */) {
         var object = toObject(this),
             self = splitString && _toString(this) == "[object String]" ?
@@ -833,6 +876,7 @@ if (!Array.prototype.lastIndexOf || ([0, 1].lastIndexOf(0, -3) != -1)) {
 if (!Object.keys) {
     // http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
     var hasDontEnumBug = true,
+        hasProtoEnumBug = (function () {}).propertyIsEnumerable('prototype'),
         dontEnums = [
             "toString",
             "toLocaleString",
@@ -849,25 +893,27 @@ if (!Object.keys) {
     }
 
     Object.keys = function keys(object) {
+        var isFunction = _toString(object) === '[object Function]',
+            isObject = object !== null && typeof object === 'object';
 
-        if (
-            (typeof object != "object" && typeof object != "function") ||
-            object === null
-        ) {
+        if (!isObject && !isFunction) {
             throw new TypeError("Object.keys called on a non-object");
         }
 
-        var keys = [];
+        var keys = [],
+            skipProto = hasProtoEnumBug && isFunction;
         for (var name in object) {
-            if (owns(object, name)) {
+            if (!(skipProto && name === 'prototype') && owns(object, name)) {
                 keys.push(name);
             }
         }
 
         if (hasDontEnumBug) {
-            for (var i = 0, ii = dontEnumsLength; i < ii; i++) {
+            var ctor = object.constructor,
+                skipConstructor = ctor && ctor.prototype === object;
+            for (var i = 0; i < dontEnumsLength; i++) {
                 var dontEnum = dontEnums[i];
-                if (owns(object, dontEnum)) {
+                if (!(skipConstructor && dontEnum === 'constructor') && owns(object, dontEnum)) {
                     keys.push(dontEnum);
                 }
             }
@@ -904,7 +950,7 @@ if (
         year = this.getUTCFullYear();
 
         month = this.getUTCMonth();
-        // see https://github.com/kriskowal/es5-shim/issues/111
+        // see https://github.com/es-shims/es5-shim/issues/111
         year += Math.floor(month / 12);
         month = (month % 12 + 12) % 12;
 
@@ -1328,7 +1374,7 @@ if (
     'ab'.split(/(?:ab)*/).length !== 2 ||
     '.'.split(/(.?)(.?)/).length !== 4 ||
     'tesst'.split(/(s)*/)[1] === "t" ||
-    ''.split(/.?/).length === 0 ||
+    ''.split(/.?/).length ||
     '.'.split(/()()/).length > 1
 ) {
     (function () {
@@ -1427,7 +1473,7 @@ if (
 // non-normative section suggesting uniform semantics and it should be
 // normalized across all browsers
 // [bugfix, IE lt 9] IE < 9 substr() with negative value not working in IE
-if("".substr && "0b".substr(-1) !== "b") {
+if ("".substr && "0b".substr(-1) !== "b") {
     var string_substr = String.prototype.substr;
     /**
      *  Get the substring of a string
@@ -1445,7 +1491,7 @@ if("".substr && "0b".substr(-1) !== "b") {
 }
 
 // ES5 15.5.4.20
-// http://es5.github.com/#x15.5.4.20
+// whitespace from: http://es5.github.io/#x15.5.4.20
 var ws = "\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003" +
     "\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028" +
     "\u2029\uFEFF";
@@ -1463,6 +1509,20 @@ if (!String.prototype.trim || ws.trim()) {
             .replace(trimBeginRegexp, "")
             .replace(trimEndRegexp, "");
     };
+}
+
+// ES-5 15.1.2.2
+if (parseInt(ws + '08') !== 8 || parseInt(ws + '0x16') !== 22) {
+    parseInt = (function (origParseInt) {
+        var hexRegex = /^0[xX]/;
+        return function parseIntES5(str, radix) {
+            str = String(str).trim();
+            if (!+radix) {
+                radix = hexRegex.test(str) ? 16 : 10;
+            }
+            return origParseInt(str, radix);
+        };
+    }(parseInt));
 }
 
 //
@@ -1526,7 +1586,7 @@ var toObject = function (o) {
     return Object(o);
 };
 
-});
+}));
 // <window>.getComputedStyle
 !('getComputedStyle' in Window.prototype) && (Window.prototype.getComputedStyle = (function () {
 	var Push = Array.prototype.push;
