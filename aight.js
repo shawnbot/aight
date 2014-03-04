@@ -33,7 +33,7 @@
 })(this);
 /*
  * classList.js: Cross-browser full element.classList implementation.
- * 2012-11-15
+ * 2014-01-31
  *
  * By Eli Grey, http://eligrey.com
  * Public Domain.
@@ -44,10 +44,7 @@
 
 /*! @source http://purl.eligrey.com/github/classList.js/blob/master/classList.js*/
 
-if ("document" in self && !(
-		"classList" in document.createElement("_") &&
-		"classList" in document.createElementNS("http://www.w3.org/2000/svg", "svg")
-	)) {
+if ("document" in self && !("classList" in document.createElement("_"))) {
 
 (function (view) {
 
@@ -168,15 +165,15 @@ classListProto.remove = function () {
 		this._updateClassName();
 	}
 };
-classListProto.toggle = function (token, forse) {
+classListProto.toggle = function (token, force) {
 	token += "";
 
 	var
 		  result = this.contains(token)
 		, method = result ?
-			forse !== true && "remove"
+			force !== true && "remove"
 		:
-			forse !== false && "add"
+			force !== false && "add"
 	;
 
 	if (method) {
@@ -1041,7 +1038,7 @@ if (!dateToJSONIsSupported) {
 // http://es5.github.com/#x15.9.4.2
 // based on work shared by Daniel Friesen (dantman)
 // http://gist.github.com/303249
-if (!Date.parse || "Date.parse is buggy") {
+if (!Date.parse || isNaN(Date.parse("2000-01-01T00:00:00.000Z"))) {
     // XXX global assignment won't work in embeddings that use
     // an alternate object for the context.
     Date = (function(NativeDate) {
