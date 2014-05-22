@@ -9,10 +9,10 @@
                 // It won't work if you just drop in innerText.get
                 // and innerText.set or the whole descriptor.
                 get: function() {
-                    return innerText.get.call(this)
+                    return innerText.get.call(this);
                 },
                 set: function(x) {
-                    return innerText.set.call(this, x)
+                    return innerText.set.call(this, x);
                 }
             });
         }

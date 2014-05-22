@@ -40,12 +40,13 @@
 		var
 		style = this,
 		currentStyle = element.currentStyle,
-		fontSize = getComputedStylePixel(element, 'fontSize');
+		fontSize = getComputedStylePixel(element, 'fontSize'),
+		makeSuffix = function (match) {
+			return '-' + match.toLowerCase();
+		};
 
-		for (property in currentStyle) {
-			Push.call(style, property == 'styleFloat' ? 'float' : property.replace(/[A-Z]/, function (match) {
-				return '-' + match.toLowerCase();
-			}));
+		for (var property in currentStyle) {
+			Push.call(style, property == 'styleFloat' ? 'float' : property.replace(/[A-Z]/, makeSuffix));
 
 			if (property == 'width') style[property] = element.offsetWidth + 'px';
 			else if (property == 'height') style[property] = element.offsetHeight + 'px';
