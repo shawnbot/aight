@@ -1,15 +1,16 @@
-// <window>.getComputedStyle
-!('getComputedStyle' in Window.prototype) && (Window.prototype.getComputedStyle = (function () {
-	var Push = Array.prototype.push;
-
+// see https://github.com/jonathantneal/polyfill
+// Window.prototype.getComputedStyle
+!('getComputedStyle' in Window.prototype) && (function () {
 	function getComputedStylePixel(element, property, fontSize) {
+		element.document; // Internet Explorer sometimes struggles to read currentStyle until the element's document is accessed.
+
 		var
 		value = element.currentStyle[property].match(/([\d\.]+)(%|cm|em|in|mm|pc|pt|)/) || [0, 0, ''],
 		size = value[1],
 		suffix = value[2],
 		rootSize;
 
-		fontSize = fontSize != null ? fontSize : /%|em/.test(suffix) && element.parentElement ? getComputedStylePixel(element.parentElement, 'fontSize', null) : 16;
+		fontSize = !fontSize ? fontSize : /%|em/.test(suffix) && element.parentElement ? getComputedStylePixel(element.parentElement, 'fontSize', null) : 16;
 		rootSize = property == 'fontSize' ? fontSize : /width/i.test(property) ? element.clientWidth : element.clientHeight;
 
 		return suffix == '%' ? size / 100 * rootSize :
@@ -36,23 +37,41 @@
 		                   [ style[t], style[r], style[b], style[l] ]).join(' ');
 	}
 
+	// <CSSStyleDeclaration>
 	function CSSStyleDeclaration(element) {
 		var
 		style = this,
 		currentStyle = element.currentStyle,
 		fontSize = getComputedStylePixel(element, 'fontSize'),
-		makeSuffix = function (match) {
+		unCamelCase = function (match) {
 			return '-' + match.toLowerCase();
-		};
+		},
+		property;
 
-		for (var property in currentStyle) {
-			Push.call(style, property == 'styleFloat' ? 'float' : property.replace(/[A-Z]/, makeSuffix));
+		for (property in currentStyle) {
+			Array.prototype.push.call(style, property == 'styleFloat' ? 'float' : property.replace(/[A-Z]/, unCamelCase));
 
-			if (property == 'width') style[property] = element.offsetWidth + 'px';
-			else if (property == 'height') style[property] = element.offsetHeight + 'px';
-			else if (property == 'styleFloat') style['float'] = currentStyle[property];
-			else if (/margin.|padding.|border.+W/.test(property) && style[property] != 'auto') style[property] = Math.round(getComputedStylePixel(element, property, fontSize)) + 'px';
-			else style[property] = currentStyle[property];
+			if (property == 'width') {
+				style[property] = element.offsetWidth + 'px';
+			} else if (property == 'height') {
+				style[property] = element.offsetHeight + 'px';
+			} else if (property == 'styleFloat') {
+				style.float = currentStyle[property];
+			} else if (/margin.|padding.|border.+W/.test(property) && style[property] != 'auto') {
+				style[property] = Math.round(getComputedStylePixel(element, property, fontSize)) + 'px';
+			} else if (/^outline/.test(property)) {
+				// errors on checking outline
+				try {
+					style[property] = currentStyle[property];
+				} catch (error) {
+					style.outlineColor = currentStyle.color;
+					style.outlineStyle = style.outlineStyle || 'none';
+					style.outlineWidth = style.outlineWidth || '0px';
+					style.outline = [style.outlineColor, style.outlineWidth, style.outlineStyle].join(' ');
+				}
+			} else {
+				style[property] = currentStyle[property];
+			}
 		}
 
 		setShortStyleProperty(style, 'margin');
@@ -64,37 +83,36 @@
 
 	CSSStyleDeclaration.prototype = {
 		constructor: CSSStyleDeclaration,
+		// <CSSStyleDeclaration>.getPropertyPriority
 		getPropertyPriority: function () {
-			throw Error('NotSupportedError: DOM Exception 9');
+			throw new Error('NotSupportedError: DOM Exception 9');
 		},
+		// <CSSStyleDeclaration>.getPropertyValue
 		getPropertyValue: function (property) {
-			if (property === undefined) {
-				throw Error('TypeError: Not enough arguments to CSSStyleDeclaration.getPropertyValue');
-			}
-			property = property.replace(/-\w/g, function (match) {
+			return this[property.replace(/-\w/g, function (match) {
 				return match[1].toUpperCase();
-			});
-			return (typeof this[property] === 'function' ||
-				property.match(/^(?:cssText|length|\d+)$/)) ? '' : this[property];
+			})];
 		},
+		// <CSSStyleDeclaration>.item
 		item: function (index) {
-			if (property === undefined) {
-				throw Error('TypeError: Not enough arguments to CSSStyleDeclaration.item');
-			}
-			return this[parseInt(index, 10)];
+			return this[index];
 		},
+		// <CSSStyleDeclaration>.removeProperty
 		removeProperty: function () {
-			throw Error('NoModificationAllowedError: DOM Exception 7');
+			throw new Error('NoModificationAllowedError: DOM Exception 7');
 		},
+		// <CSSStyleDeclaration>.setProperty
 		setProperty: function () {
-			throw Error('NoModificationAllowedError: DOM Exception 7');
+			throw new Error('NoModificationAllowedError: DOM Exception 7');
 		},
+		// <CSSStyleDeclaration>.getPropertyCSSValue
 		getPropertyCSSValue: function () {
-			throw Error('NotSupportedError: DOM Exception 9');
+			throw new Error('NotSupportedError: DOM Exception 9');
 		}
 	};
 
-	return function (element) {
+	// <window>.getComputedStyle
+	window.getComputedStyle = Window.prototype.getComputedStyle = function (element) {
 		return new CSSStyleDeclaration(element);
 	};
-})());
+})();
