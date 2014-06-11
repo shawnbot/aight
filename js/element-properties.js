@@ -13,10 +13,23 @@
             // So must use function-wrapped descriptor.fn.call pattern.
 
             // "Normal" Elements
-            var innerText = Object.getOwnPropertyDescriptor(Element.prototype, "innerText");
+            // NOTE: textContent is different from innerText, so its use would be incorrect:
+            //var innerText = Object.getOwnPropertyDescriptor(Element.prototype, "innerText"); // nope!
+            var getTextContent = function(x) {
+		var c = this.firstChild;
+		var tc=[];
+                // append the textContent of its children
+		while(!!c) {
+                    if (c.nodeType !== 8 && c.nodeType !== 7) { // skip comments
+                        tc.push(c.textContent);
+                    }
+		    c = c.nextSibling;
+		}
+		c = null;
+		tc = tc.join('');
+		return tc;
+	    };
             var setTextContent = function(x) {
-                    // Note that setting textContent is different from innerText, so
-                    // calling innerText.set would be incorrect.
                     var c;
                     while(!!(c=this.lastChild)) {
                         this.removeChild(c);
@@ -29,9 +42,11 @@
             };
             Object.defineProperty(Element.prototype, "textContent", {
                 get: function() {
-                    return innerText.get.call(this);
+                    // return innerText.get.call(this); // not good enough!
+                    return getTextContent.call(this);
                 },
                 set: function(x) {
+                    // return innerText.set.call(this, x); // not good enough!
                     return setTextContent.call(this, x);
                 }
             });
@@ -92,16 +107,7 @@
                 get: function() {
                     // document fragments have textContent
                     if (this.nodeType === 11) {
-                        var c = this.firstChild;
-                        var tc=[];
-                        // append the textContent of its children
-                        while(!!c) {
-                            tc.push(c.textContent);
-                            c = c.nextSibling;
-                        }
-                        c = null;
-                        tc = tc.join('');
-                        return tc;
+                        return getTextContent.call(this);
                     }
                     // a true Document's textContent is always null
                     return null; // === documentNodeValue.get.call(this);
