@@ -1784,6 +1784,8 @@ if (!document.createElementNS) {
                     }
 		    c = c.nextSibling;
 		}
+		// a <br> Element should show as a newline
+		if (this.tagName === 'BR') { tc.push('\n'); }
 		c = null;
 		tc = tc.join('');
 		return tc;
