@@ -1,8 +1,5 @@
 /*
- * aight v1.2.1
- *
- * <http://github.com/shawnbot/aight/>
- *
+ * aight <http://github.com/shawnbot/aight/>
  * Aight is a collection of JavaScript shims that make IE8 behave like a modern
  * browser (sans SVG).
  */
@@ -17,6 +14,7 @@
             version = match ? parseFloat(match[1]) : 0;
         }
         return {
+            version: "1.2.3",
             browser: {
                 name:       nav,
                 version:    version,
