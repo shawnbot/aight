@@ -7,3 +7,6 @@
 [submodule "lib/dom4"]
 	path = lib/dom4
 	url = git@github.com:WebReflection/dom4.git
+[submodule "lib/es5-shim"]
+	path = lib/es5-shim
+	url = git@github.com:es-shims/es5-shim.git
