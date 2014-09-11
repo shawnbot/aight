@@ -7,3 +7,9 @@
 [submodule "js/classList"]
 	path = js/classList
 	url = https://github.com/eligrey/classList.js.git
+[submodule "lib/ie8"]
+	path = lib/ie8
+	url = git@github.com:WebReflection/ie8.git
+[submodule "lib/dom4"]
+	path = lib/dom4
+	url = git@github.com:WebReflection/dom4.git
