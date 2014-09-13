@@ -4,7 +4,7 @@
   // patch CSSStyleDeclaration.prototype using IE8's methods
   if (typeof CSSSDProto.setAttribute !== "undefined") {
     CSSSDProto.setProperty = function(property, value) {
-      return this.setAttribute(property, value /*, important */ );
+      return this.setAttribute(String(property), value /*, important */ );
     };
     CSSSDProto.getPropertyValue = function(property) {
       return this.getAttribute(property);
