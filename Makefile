@@ -1,16 +1,17 @@
 JS_FILES = \
-	js/aight.js \
-	js/classList/classList.js \
-	js/es5-shim/es5-shim.js \
-	js/computed-style.js \
-	js/css-properties.js \
-	js/element-createElementNS.js \
-	js/element-events.js \
-	js/element-properties.js
+	src/start.js \
+	src/aight.js \
+	lib/ie8/src/ie8.js \
+	lib/dom4/src/dom4.js \
+	lib/es5-shim/es5-shim.js \
+	src/createElementNS.js \
+	src/css-om.js \
+	src/end.js
 
 JS_COMPILER ?= uglifyjs
 
-all: aight.js aight.min.js aight.d3.min.js
+all: aight.js aight.min.js
+# XXX aight.d3.min.js
 
 clean:
 	rm -f aight.js aight.min.js
