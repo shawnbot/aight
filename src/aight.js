@@ -8,7 +8,7 @@
       version = match ? parseFloat(match[1]) : 0;
     }
     return {
-      version: "2.0.1",
+      version: "2.0.0",
       browser: {
         name:     nav,
         version:  version,
