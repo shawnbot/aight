@@ -1,11 +1,12 @@
 JS_FILES = \
 	src/start.js \
 	src/aight.js \
-	lib/ie8/src/ie8.js \
-	lib/dom4/src/dom4.js \
 	lib/es5-shim/es5-shim.js \
-	src/createElementNS.js \
+	lib/es5-shim/es5-sham.js \
+	src/ie8.js \
+	lib/dom4/src/dom4.js \
 	src/css-om.js \
+	src/createElementNS.js \
 	src/end.js
 
 JS_COMPILER ?= uglifyjs
