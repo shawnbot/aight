@@ -5,6 +5,7 @@ JS_FILES = \
 	lib/es5-shim/es5-sham.js \
 	src/ie8.js \
 	lib/dom4/src/dom4.js \
+	lib/html5shiv/src/html5shiv.js \
 	src/css-om.js \
 	src/createElementNS.js \
 	src/end.js

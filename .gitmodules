@@ -13,3 +13,6 @@
 [submodule "lib/polyfill"]
 	path = lib/polyfill
 	url = https://github.com/inexorabletash/polyfill.git
+[submodule "lib/html5shiv"]
+	path = lib/html5shiv
+	url = https://github.com/aFarkas/html5shiv.git
