@@ -1,0 +1,4 @@
+ui: qunit
+browsers:
+  - name: ie
+    version: 8..9
