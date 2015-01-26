@@ -1,226 +1,36 @@
 /*
  * aight <http://github.com/shawnbot/aight/>
- * Aight is a collection of JavaScript shims that make IE8 behave like a modern
- * browser (sans SVG).
+ * is a collection of JavaScript shims and polyfills that make IE8 (and other
+ * legacy browsers) behave a lot more like modern ones.
  */
 (function(exports) {
-
-    var aight = exports.aight = (function() {
-        var nav = navigator.appName,
-            version = navigator.appVersion,
-            ie = (nav == 'Microsoft Internet Explorer');
-        if (ie) {
-            var match = navigator.userAgent.match(/MSIE ([0-9]{1,}[\.0-9]{0,})/);
-            version = match ? parseFloat(match[1]) : 0;
-        }
-        return {
-            version: "1.2.5",
-            browser: {
-                name:       nav,
-                version:    version,
-                ie:         ie,
-                ie10:       (ie && version >= 10),
-                ie9:        (ie && version >= 9 && version < 10),
-                ie8:        (ie && version >= 8 && version < 9),
-                ie7:        (ie && version >= 7 && version < 8),
-                ie6:        (ie && version >= 6 && version < 7)
-            }
-        };
-    })();
-
-})(this);
-/*
- * classList.js: Cross-browser full element.classList implementation.
- * 2012-11-15
- *
- * By Eli Grey, http://eligrey.com
- * Public Domain.
- * NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
+/*!
+ * https://github.com/es-shims/es5-shim
+ * @license es5-shim Copyright 2009-2014 by contributors, MIT License
+ * see https://github.com/es-shims/es5-shim/blob/master/LICENSE
  */
 
-/*global self, document, DOMException */
-
-/*! @source http://purl.eligrey.com/github/classList.js/blob/master/classList.js*/
-
-if (typeof document !== "undefined" && !("classList" in document.createElement("a"))) {
-
-(function (view) {
-
-"use strict";
-
-if (!('HTMLElement' in view) && !('Element' in view)) return;
-
-var
-	  classListProp = "classList"
-	, protoProp = "prototype"
-	, elemCtrProto = (view.HTMLElement || view.Element)[protoProp]
-	, objCtr = Object
-	, strTrim = String[protoProp].trim || function () {
-		return this.replace(/^\s+|\s+$/g, "");
-	}
-	, arrIndexOf = Array[protoProp].indexOf || function (item) {
-		var
-			  i = 0
-			, len = this.length
-		;
-		for (; i < len; i++) {
-			if (i in this && this[i] === item) {
-				return i;
-			}
-		}
-		return -1;
-	}
-	// Vendors: please allow content code to instantiate DOMExceptions
-	, DOMEx = function (type, message) {
-		this.name = type;
-		this.code = DOMException[type];
-		this.message = message;
-	}
-	, checkTokenAndGetIndex = function (classList, token) {
-		if (token === "") {
-			throw new DOMEx(
-				  "SYNTAX_ERR"
-				, "An invalid or illegal string was specified"
-			);
-		}
-		if (/\s/.test(token)) {
-			throw new DOMEx(
-				  "INVALID_CHARACTER_ERR"
-				, "String contains an invalid character"
-			);
-		}
-		return arrIndexOf.call(classList, token);
-	}
-	, ClassList = function (elem) {
-		var
-			  trimmedClasses = strTrim.call(elem.className)
-			, classes = trimmedClasses ? trimmedClasses.split(/\s+/) : []
-			, i = 0
-			, len = classes.length
-		;
-		for (; i < len; i++) {
-			this.push(classes[i]);
-		}
-		this._updateClassName = function () {
-			elem.className = this.toString();
-		};
-	}
-	, classListProto = ClassList[protoProp] = []
-	, classListGetter = function () {
-		return new ClassList(this);
-	}
-;
-// Most DOMException implementations don't allow calling DOMException's toString()
-// on non-DOMExceptions. Error's toString() is sufficient here.
-DOMEx[protoProp] = Error[protoProp];
-classListProto.item = function (i) {
-	return this[i] || null;
-};
-classListProto.contains = function (token) {
-	token += "";
-	return checkTokenAndGetIndex(this, token) !== -1;
-};
-classListProto.add = function () {
-	var
-		  tokens = arguments
-		, i = 0
-		, l = tokens.length
-		, token
-		, updated = false
-	;
-	do {
-		token = tokens[i] + "";
-		if (checkTokenAndGetIndex(this, token) === -1) {
-			this.push(token);
-			updated = true;
-		}
-	}
-	while (++i < l);
-
-	if (updated) {
-		this._updateClassName();
-	}
-};
-classListProto.remove = function () {
-	var
-		  tokens = arguments
-		, i = 0
-		, l = tokens.length
-		, token
-		, updated = false
-	;
-	do {
-		token = tokens[i] + "";
-		var index = checkTokenAndGetIndex(this, token);
-		if (index !== -1) {
-			this.splice(index, 1);
-			updated = true;
-		}
-	}
-	while (++i < l);
-
-	if (updated) {
-		this._updateClassName();
-	}
-};
-classListProto.toggle = function (token, forse) {
-	token += "";
-
-	var
-		  result = this.contains(token)
-		, method = result ?
-			forse !== true && "remove"
-		:
-			forse !== false && "add"
-	;
-
-	if (method) {
-		this[method](token);
-	}
-
-	return !result;
-};
-classListProto.toString = function () {
-	return this.join(" ");
-};
-
-if (objCtr.defineProperty) {
-	var classListPropDesc = {
-		  get: classListGetter
-		, enumerable: true
-		, configurable: true
-	};
-	try {
-		objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
-	} catch (ex) { // IE 8 doesn't support enumerable:true
-		if (ex.number === -0x7FF5EC54) {
-			classListPropDesc.enumerable = false;
-			objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
-		}
-	}
-} else if (objCtr[protoProp].__defineGetter__) {
-	elemCtrProto.__defineGetter__(classListProp, classListGetter);
-}
-
-}(self));
-
-}
-// Copyright 2009-2012 by contributors, MIT License
 // vim: ts=4 sts=4 sw=4 expandtab
 
-// Module systems magic dance
-(function (definition) {
-    // RequireJS
-    if (typeof define == "function") {
-        define(definition);
-    // YUI3
-    } else if (typeof YUI == "function") {
-        YUI.add("es5", definition);
-    // CommonJS and <script>
+//Add semicolon to prevent IIFE from being passed as argument to concatenated code.
+;
+
+// UMD (Universal Module Definition)
+// see https://github.com/umdjs/umd/blob/master/returnExports.js
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(factory);
+    } else if (typeof exports === 'object') {
+        // Node. Does not work with strict CommonJS, but
+        // only CommonJS-like enviroments that support module.exports,
+        // like Node.
+        module.exports = factory();
     } else {
-        definition();
+        // Browser globals (root is window)
+        root.returnExports = factory();
     }
-})(function () {
+}(this, function () {
 
 /**
  * Brings an environment as close to ECMAScript 5 compliance
@@ -230,6 +40,149 @@ if (objCtr.defineProperty) {
  * ES5 Spec: http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
  * Required reading: http://javascriptweblog.wordpress.com/2011/12/05/extending-javascript-natives/
  */
+
+// Shortcut to an often accessed properties, in order to avoid multiple
+// dereference that costs universally.
+var ArrayPrototype = Array.prototype;
+var ObjectPrototype = Object.prototype;
+var FunctionPrototype = Function.prototype;
+var StringPrototype = String.prototype;
+var NumberPrototype = Number.prototype;
+var array_slice = ArrayPrototype.slice;
+var array_splice = ArrayPrototype.splice;
+var array_push = ArrayPrototype.push;
+var array_unshift = ArrayPrototype.unshift;
+var call = FunctionPrototype.call;
+
+// Having a toString local variable name breaks in Opera so use _toString.
+var _toString = ObjectPrototype.toString;
+
+var isFunction = function (val) {
+    return ObjectPrototype.toString.call(val) === '[object Function]';
+};
+var isRegex = function (val) {
+    return ObjectPrototype.toString.call(val) === '[object RegExp]';
+};
+var isArray = function isArray(obj) {
+    return _toString.call(obj) === "[object Array]";
+};
+var isString = function isString(obj) {
+    return _toString.call(obj) === "[object String]";
+};
+var isArguments = function isArguments(value) {
+    var str = _toString.call(value);
+    var isArgs = str === '[object Arguments]';
+    if (!isArgs) {
+        isArgs = !isArray(value)
+            && value !== null
+            && typeof value === 'object'
+            && typeof value.length === 'number'
+            && value.length >= 0
+            && isFunction(value.callee);
+    }
+    return isArgs;
+};
+
+var supportsDescriptors = Object.defineProperty && (function () {
+    try {
+        Object.defineProperty({}, 'x', {});
+        return true;
+    } catch (e) { /* this is ES3 */
+        return false;
+    }
+}());
+
+// Define configurable, writable and non-enumerable props
+// if they don't exist.
+var defineProperty;
+if (supportsDescriptors) {
+    defineProperty = function (object, name, method, forceAssign) {
+        if (!forceAssign && (name in object)) { return; }
+        Object.defineProperty(object, name, {
+            configurable: true,
+            enumerable: false,
+            writable: true,
+            value: method
+        });
+    };
+} else {
+    defineProperty = function (object, name, method, forceAssign) {
+        if (!forceAssign && (name in object)) { return; }
+        object[name] = method;
+    };
+}
+var defineProperties = function (object, map, forceAssign) {
+    for (var name in map) {
+        if (ObjectPrototype.hasOwnProperty.call(map, name)) {
+          defineProperty(object, name, map[name], forceAssign);
+        }
+    }
+};
+
+//
+// Util
+// ======
+//
+
+// ES5 9.4
+// http://es5.github.com/#x9.4
+// http://jsperf.com/to-integer
+
+function toInteger(n) {
+    n = +n;
+    if (n !== n) { // isNaN
+        n = 0;
+    } else if (n !== 0 && n !== (1 / 0) && n !== -(1 / 0)) {
+        n = (n > 0 || -1) * Math.floor(Math.abs(n));
+    }
+    return n;
+}
+
+function isPrimitive(input) {
+    var type = typeof input;
+    return (
+        input === null ||
+        type === "undefined" ||
+        type === "boolean" ||
+        type === "number" ||
+        type === "string"
+    );
+}
+
+function toPrimitive(input) {
+    var val, valueOf, toStr;
+    if (isPrimitive(input)) {
+        return input;
+    }
+    valueOf = input.valueOf;
+    if (isFunction(valueOf)) {
+        val = valueOf.call(input);
+        if (isPrimitive(val)) {
+            return val;
+        }
+    }
+    toStr = input.toString;
+    if (isFunction(toStr)) {
+        val = toStr.call(input);
+        if (isPrimitive(val)) {
+            return val;
+        }
+    }
+    throw new TypeError();
+}
+
+// ES5 9.9
+// http://es5.github.com/#x9.9
+var toObject = function (o) {
+    if (o == null) { // this matches both null and undefined
+        throw new TypeError("can't convert " + o + " to object");
+    }
+    return Object(o);
+};
+
+var ToUint32 = function ToUint32(x) {
+    return x >>> 0;
+};
 
 //
 // Function
@@ -241,18 +194,18 @@ if (objCtr.defineProperty) {
 
 function Empty() {}
 
-if (!Function.prototype.bind) {
-    Function.prototype.bind = function bind(that) { // .length is 1
+defineProperties(FunctionPrototype, {
+    bind: function bind(that) { // .length is 1
         // 1. Let Target be the this value.
         var target = this;
         // 2. If IsCallable(Target) is false, throw a TypeError exception.
-        if (typeof target != "function") {
+        if (!isFunction(target)) {
             throw new TypeError("Function.prototype.bind called on incompatible " + target);
         }
         // 3. Let A be a new (possibly empty) internal list of all of the
         //   argument values provided after thisArg (arg1, arg2 etc), in order.
         // XXX slicedArgs will stand in for "A" if used
-        var args = _Array_slice_.call(arguments, 1); // for normal call
+        var args = array_slice.call(arguments, 1); // for normal call
         // 4. Let F be a new native ECMAScript object.
         // 11. Set the [[Prototype]] internal property of F to the standard
         //   built-in Function prototype object as specified in 15.3.3.1.
@@ -262,7 +215,7 @@ if (!Function.prototype.bind) {
         //   15.3.4.5.2.
         // 14. Set the [[HasInstance]] internal property of F as described in
         //   15.3.4.5.3.
-        var bound = function () {
+        var binder = function () {
 
             if (this instanceof bound) {
                 // 15.3.4.5.2 [[Construct]]
@@ -283,7 +236,7 @@ if (!Function.prototype.bind) {
 
                 var result = target.apply(
                     this,
-                    args.concat(_Array_slice_.call(arguments))
+                    args.concat(array_slice.call(arguments))
                 );
                 if (Object(result) === result) {
                     return result;
@@ -312,27 +265,42 @@ if (!Function.prototype.bind) {
                 // equiv: target.call(this, ...boundArgs, ...args)
                 return target.apply(
                     that,
-                    args.concat(_Array_slice_.call(arguments))
+                    args.concat(array_slice.call(arguments))
                 );
 
             }
 
         };
-        if(target.prototype) {
-            Empty.prototype = target.prototype;
-            bound.prototype = new Empty();
-            // Clean up dangling references.
-            Empty.prototype = null;
-        }
-        // XXX bound.length is never writable, so don't even try
-        //
+
         // 15. If the [[Class]] internal property of Target is "Function", then
         //     a. Let L be the length property of Target minus the length of A.
         //     b. Set the length own property of F to either 0 or L, whichever is
         //       larger.
         // 16. Else set the length own property of F to 0.
+
+        var boundLength = Math.max(0, target.length - args.length);
+
         // 17. Set the attributes of the length own property of F to the values
         //   specified in 15.3.5.1.
+        var boundArgs = [];
+        for (var i = 0; i < boundLength; i++) {
+            boundArgs.push("$" + i);
+        }
+
+        // XXX Build a dynamic function with desired amount of arguments is the only
+        // way to set the length property of a function.
+        // In environments where Content Security Policies enabled (Chrome extensions,
+        // for ex.) all use of eval or Function costructor throws an exception.
+        // However in all of these environments Function.prototype.bind exists
+        // and so this code will never be executed.
+        var bound = Function("binder", "return function (" + boundArgs.join(",") + "){return binder.apply(this,arguments)}")(binder);
+
+        if (target.prototype) {
+            Empty.prototype = target.prototype;
+            bound.prototype = new Empty();
+            // Clean up dangling references.
+            Empty.prototype = null;
+        }
 
         // TODO
         // 18. Set the [[Extensible]] internal property of F to true.
@@ -356,20 +324,12 @@ if (!Function.prototype.bind) {
 
         // 22. Return F.
         return bound;
-    };
-}
+    }
+});
 
-// Shortcut to an often accessed properties, in order to avoid multiple
-// dereference that costs universally.
 // _Please note: Shortcuts are defined after `Function.prototype.bind` as we
 // us it in defining shortcuts.
-var call = Function.prototype.call;
-var prototypeOfArray = Array.prototype;
-var prototypeOfObject = Object.prototype;
-var _Array_slice_ = prototypeOfArray.slice;
-// Having a toString local variable name breaks in Opera so use _toString.
-var _toString = call.bind(prototypeOfObject.toString);
-var owns = call.bind(prototypeOfObject.hasOwnProperty);
+var owns = call.bind(ObjectPrototype.hasOwnProperty);
 
 // If JS engine supports accessors creating shortcuts.
 var defineGetter;
@@ -377,11 +337,11 @@ var defineSetter;
 var lookupGetter;
 var lookupSetter;
 var supportsAccessors;
-if ((supportsAccessors = owns(prototypeOfObject, "__defineGetter__"))) {
-    defineGetter = call.bind(prototypeOfObject.__defineGetter__);
-    defineSetter = call.bind(prototypeOfObject.__defineSetter__);
-    lookupGetter = call.bind(prototypeOfObject.__lookupGetter__);
-    lookupSetter = call.bind(prototypeOfObject.__lookupSetter__);
+if ((supportsAccessors = owns(ObjectPrototype, "__defineGetter__"))) {
+    defineGetter = call.bind(ObjectPrototype.__defineGetter__);
+    defineSetter = call.bind(ObjectPrototype.__defineSetter__);
+    lookupGetter = call.bind(ObjectPrototype.__lookupGetter__);
+    lookupSetter = call.bind(ObjectPrototype.__lookupSetter__);
 }
 
 //
@@ -391,120 +351,61 @@ if ((supportsAccessors = owns(prototypeOfObject, "__defineGetter__"))) {
 
 // ES5 15.4.4.12
 // http://es5.github.com/#x15.4.4.12
-// Default value for second param
-// [bugfix, ielt9, old browsers]
-// IE < 9 bug: [1,2].splice(0).join("") == "" but should be "12"
-if ([1,2].splice(0).length != 2) {
-    var array_splice = Array.prototype.splice;
-
-    if(function() { // test IE < 9 to splice bug - see issue #138
-        function makeArray(l) {
-            var a = [];
-            while (l--) {
-                a.unshift(l)
-            }
-            return a
+var spliceNoopReturnsEmptyArray = (function () {
+    var a = [1, 2];
+    var result = a.splice();
+    return a.length === 2 && isArray(result) && result.length === 0;
+}());
+defineProperties(ArrayPrototype, {
+    // Safari 5.0 bug where .splice() returns undefined
+    splice: function splice(start, deleteCount) {
+        if (arguments.length === 0) {
+            return [];
+        } else {
+            return array_splice.apply(this, arguments);
         }
+    }
+}, spliceNoopReturnsEmptyArray);
 
-        var array = []
-            , lengthBefore
-        ;
-
-        array.splice.bind(array, 0, 0).apply(null, makeArray(20));
-        array.splice.bind(array, 0, 0).apply(null, makeArray(26));
-
-        lengthBefore = array.length; //20
-        array.splice(5, 0, "XXX"); // add one element
-
-        if(lengthBefore + 1 == array.length) {
-            return true;// has right splice implementation without bugs
-        }
-        // else {
-        //    IE8 bug
-        // }
-    }()) {//IE 6/7
-        Array.prototype.splice = function(start, deleteCount) {
-            if (!arguments.length) {
-                return [];
+var spliceWorksWithEmptyObject = (function () {
+    var obj = {};
+    ArrayPrototype.splice.call(obj, 0, 0, 1);
+    return obj.length === 1;
+}());
+defineProperties(ArrayPrototype, {
+    splice: function splice(start, deleteCount) {
+        if (arguments.length === 0) { return []; }
+        var args = arguments;
+        this.length = Math.max(toInteger(this.length), 0);
+        if (arguments.length > 0 && typeof deleteCount !== 'number') {
+            args = array_slice.call(arguments);
+            if (args.length < 2) {
+                args.push(this.length - start);
             } else {
-                return array_splice.apply(this, [
-                    start === void 0 ? 0 : start,
-                    deleteCount === void 0 ? (this.length - start) : deleteCount
-                ].concat(_Array_slice_.call(arguments, 2)))
+                args[1] = toInteger(deleteCount);
             }
-        };
-    }
-    else {//IE8
-        Array.prototype.splice = function(start, deleteCount) {
-            var result
-                , args = _Array_slice_.call(arguments, 2)
-                , addElementsCount = args.length
-            ;
-
-            if(!arguments.length) {
-                return [];
-            }
-
-            if(start === void 0) { // default
-                start = 0;
-            }
-            if(deleteCount === void 0) { // default
-                deleteCount = this.length - start;
-            }
-
-            if(addElementsCount > 0) {
-                if(deleteCount <= 0) {
-                    if(start == this.length) { // tiny optimisation #1
-                        this.push.apply(this, args);
-                        return [];
-                    }
-
-                    if(start == 0) { // tiny optimisation #2
-                        this.unshift.apply(this, args);
-                        return [];
-                    }
-                }
-
-                // Array.prototype.splice implementation
-                result = _Array_slice_.call(this, start, start + deleteCount);// delete part
-                args.push.apply(args, _Array_slice_.call(this, start + deleteCount, this.length));// right part
-                args.unshift.apply(args, _Array_slice_.call(this, 0, start));// left part
-
-                // delete all items from this array and replace it to 'left part' + _Array_slice_.call(arguments, 2) + 'right part'
-                args.unshift(0, this.length);
-
-                array_splice.apply(this, args);
-
-                return result;
-            }
-
-            return array_splice.call(this, start, deleteCount);
         }
-
+        return array_splice.apply(this, args);
     }
-}
+}, !spliceWorksWithEmptyObject);
 
 // ES5 15.4.4.12
 // http://es5.github.com/#x15.4.4.13
 // Return len+argCount.
 // [bugfix, ielt8]
-// IE < 8 bug: [].unshift(0) == undefined but should be "1"
-if ([].unshift(0) != 1) {
-    var array_unshift = Array.prototype.unshift;
-    Array.prototype.unshift = function() {
+// IE < 8 bug: [].unshift(0) === undefined but should be "1"
+var hasUnshiftReturnValueBug = [].unshift(0) !== 1;
+defineProperties(ArrayPrototype, {
+    unshift: function () {
         array_unshift.apply(this, arguments);
         return this.length;
-    };
-}
+    }
+}, hasUnshiftReturnValueBug);
 
 // ES5 15.4.3.2
 // http://es5.github.com/#x15.4.3.2
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/isArray
-if (!Array.isArray) {
-    Array.isArray = function isArray(obj) {
-        return _toString(obj) == "[object Array]";
-    };
-}
+defineProperties(Array, { isArray: isArray });
 
 // The IsCallable() check in the Array functions
 // has been replaced with a strict check on the
@@ -524,21 +425,36 @@ if (!Array.isArray) {
 
 // Check failure of by-index access of string characters (IE < 9)
 // and failure of `0 in boxedString` (Rhino)
-var boxedString = Object("a"),
-    splitString = boxedString[0] != "a" || !(0 in boxedString);
+var boxedString = Object("a");
+var splitString = boxedString[0] !== "a" || !(0 in boxedString);
 
-if (!Array.prototype.forEach) {
-    Array.prototype.forEach = function forEach(fun /*, thisp*/) {
+var properlyBoxesContext = function properlyBoxed(method) {
+    // Check node 0.6.21 bug where third parameter is not boxed
+    var properlyBoxesNonStrict = true;
+    var properlyBoxesStrict = true;
+    if (method) {
+        method.call('foo', function (_, __, context) {
+            if (typeof context !== 'object') { properlyBoxesNonStrict = false; }
+        });
+
+        method.call([1], function () {
+            'use strict';
+            properlyBoxesStrict = typeof this === 'string';
+        }, 'x');
+    }
+    return !!method && properlyBoxesNonStrict && properlyBoxesStrict;
+};
+
+defineProperties(ArrayPrototype, {
+    forEach: function forEach(fun /*, thisp*/) {
         var object = toObject(this),
-            self = splitString && _toString(this) == "[object String]" ?
-                this.split("") :
-                object,
+            self = splitString && isString(this) ? this.split('') : object,
             thisp = arguments[1],
             i = -1,
             length = self.length >>> 0;
 
         // If no callback function or if callback is not a callable function
-        if (_toString(fun) != "[object Function]") {
+        if (!isFunction(fun)) {
             throw new TypeError(); // TODO message
         }
 
@@ -550,51 +466,48 @@ if (!Array.prototype.forEach) {
                 fun.call(thisp, self[i], i, object);
             }
         }
-    };
-}
+    }
+}, !properlyBoxesContext(ArrayPrototype.forEach));
 
 // ES5 15.4.4.19
 // http://es5.github.com/#x15.4.4.19
 // https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/map
-if (!Array.prototype.map) {
-    Array.prototype.map = function map(fun /*, thisp*/) {
+defineProperties(ArrayPrototype, {
+    map: function map(fun /*, thisp*/) {
         var object = toObject(this),
-            self = splitString && _toString(this) == "[object String]" ?
-                this.split("") :
-                object,
+            self = splitString && isString(this) ? this.split('') : object,
             length = self.length >>> 0,
             result = Array(length),
             thisp = arguments[1];
 
         // If no callback function or if callback is not a callable function
-        if (_toString(fun) != "[object Function]") {
+        if (!isFunction(fun)) {
             throw new TypeError(fun + " is not a function");
         }
 
         for (var i = 0; i < length; i++) {
-            if (i in self)
+            if (i in self) {
                 result[i] = fun.call(thisp, self[i], i, object);
+            }
         }
         return result;
-    };
-}
+    }
+}, !properlyBoxesContext(ArrayPrototype.map));
 
 // ES5 15.4.4.20
 // http://es5.github.com/#x15.4.4.20
 // https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/filter
-if (!Array.prototype.filter) {
-    Array.prototype.filter = function filter(fun /*, thisp */) {
+defineProperties(ArrayPrototype, {
+    filter: function filter(fun /*, thisp */) {
         var object = toObject(this),
-            self = splitString && _toString(this) == "[object String]" ?
-                this.split("") :
-                    object,
+            self = splitString && isString(this) ? this.split('') : object,
             length = self.length >>> 0,
             result = [],
             value,
             thisp = arguments[1];
 
         // If no callback function or if callback is not a callable function
-        if (_toString(fun) != "[object Function]") {
+        if (!isFunction(fun)) {
             throw new TypeError(fun + " is not a function");
         }
 
@@ -607,23 +520,21 @@ if (!Array.prototype.filter) {
             }
         }
         return result;
-    };
-}
+    }
+}, !properlyBoxesContext(ArrayPrototype.filter));
 
 // ES5 15.4.4.16
 // http://es5.github.com/#x15.4.4.16
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/every
-if (!Array.prototype.every) {
-    Array.prototype.every = function every(fun /*, thisp */) {
+defineProperties(ArrayPrototype, {
+    every: function every(fun /*, thisp */) {
         var object = toObject(this),
-            self = splitString && _toString(this) == "[object String]" ?
-                this.split("") :
-                object,
+            self = splitString && isString(this) ? this.split('') : object,
             length = self.length >>> 0,
             thisp = arguments[1];
 
         // If no callback function or if callback is not a callable function
-        if (_toString(fun) != "[object Function]") {
+        if (!isFunction(fun)) {
             throw new TypeError(fun + " is not a function");
         }
 
@@ -633,23 +544,21 @@ if (!Array.prototype.every) {
             }
         }
         return true;
-    };
-}
+    }
+}, !properlyBoxesContext(ArrayPrototype.every));
 
 // ES5 15.4.4.17
 // http://es5.github.com/#x15.4.4.17
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/some
-if (!Array.prototype.some) {
-    Array.prototype.some = function some(fun /*, thisp */) {
+defineProperties(ArrayPrototype, {
+    some: function some(fun /*, thisp */) {
         var object = toObject(this),
-            self = splitString && _toString(this) == "[object String]" ?
-                this.split("") :
-                object,
+            self = splitString && isString(this) ? this.split('') : object,
             length = self.length >>> 0,
             thisp = arguments[1];
 
         // If no callback function or if callback is not a callable function
-        if (_toString(fun) != "[object Function]") {
+        if (!isFunction(fun)) {
             throw new TypeError(fun + " is not a function");
         }
 
@@ -659,27 +568,29 @@ if (!Array.prototype.some) {
             }
         }
         return false;
-    };
-}
+    }
+}, !properlyBoxesContext(ArrayPrototype.some));
 
 // ES5 15.4.4.21
 // http://es5.github.com/#x15.4.4.21
 // https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/reduce
-if (!Array.prototype.reduce) {
-    Array.prototype.reduce = function reduce(fun /*, initial*/) {
+var reduceCoercesToObject = false;
+if (ArrayPrototype.reduce) {
+    reduceCoercesToObject = typeof ArrayPrototype.reduce.call('es5', function (_, __, ___, list) { return list; }) === 'object';
+}
+defineProperties(ArrayPrototype, {
+    reduce: function reduce(fun /*, initial*/) {
         var object = toObject(this),
-            self = splitString && _toString(this) == "[object String]" ?
-                this.split("") :
-                object,
+            self = splitString && isString(this) ? this.split('') : object,
             length = self.length >>> 0;
 
         // If no callback function or if callback is not a callable function
-        if (_toString(fun) != "[object Function]") {
+        if (!isFunction(fun)) {
             throw new TypeError(fun + " is not a function");
         }
 
         // no value to return if no initial value and an empty array
-        if (!length && arguments.length == 1) {
+        if (!length && arguments.length === 1) {
             throw new TypeError("reduce of empty array with no initial value");
         }
 
@@ -708,27 +619,29 @@ if (!Array.prototype.reduce) {
         }
 
         return result;
-    };
-}
+    }
+}, !reduceCoercesToObject);
 
 // ES5 15.4.4.22
 // http://es5.github.com/#x15.4.4.22
 // https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/reduceRight
-if (!Array.prototype.reduceRight) {
-    Array.prototype.reduceRight = function reduceRight(fun /*, initial*/) {
+var reduceRightCoercesToObject = false;
+if (ArrayPrototype.reduceRight) {
+    reduceRightCoercesToObject = typeof ArrayPrototype.reduceRight.call('es5', function (_, __, ___, list) { return list; }) === 'object';
+}
+defineProperties(ArrayPrototype, {
+    reduceRight: function reduceRight(fun /*, initial*/) {
         var object = toObject(this),
-            self = splitString && _toString(this) == "[object String]" ?
-                this.split("") :
-                object,
+            self = splitString && isString(this) ? this.split('') : object,
             length = self.length >>> 0;
 
         // If no callback function or if callback is not a callable function
-        if (_toString(fun) != "[object Function]") {
+        if (!isFunction(fun)) {
             throw new TypeError(fun + " is not a function");
         }
 
         // no value to return if no initial value, empty array
-        if (!length && arguments.length == 1) {
+        if (!length && arguments.length === 1) {
             throw new TypeError("reduceRight of empty array with no initial value");
         }
 
@@ -754,23 +667,22 @@ if (!Array.prototype.reduceRight) {
         }
 
         do {
-            if (i in this) {
+            if (i in self) {
                 result = fun.call(void 0, result, self[i], i, object);
             }
         } while (i--);
 
         return result;
-    };
-}
+    }
+}, !reduceRightCoercesToObject);
 
 // ES5 15.4.4.14
 // http://es5.github.com/#x15.4.4.14
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/indexOf
-if (!Array.prototype.indexOf || ([0, 1].indexOf(1, 2) != -1)) {
-    Array.prototype.indexOf = function indexOf(sought /*, fromIndex */ ) {
-        var self = splitString && _toString(this) == "[object String]" ?
-                this.split("") :
-                toObject(this),
+var hasFirefox2IndexOfBug = Array.prototype.indexOf && [0, 1].indexOf(1, 2) !== -1;
+defineProperties(ArrayPrototype, {
+    indexOf: function indexOf(sought /*, fromIndex */ ) {
+        var self = splitString && isString(this) ? this.split('') : toObject(this),
             length = self.length >>> 0;
 
         if (!length) {
@@ -790,17 +702,16 @@ if (!Array.prototype.indexOf || ([0, 1].indexOf(1, 2) != -1)) {
             }
         }
         return -1;
-    };
-}
+    }
+}, hasFirefox2IndexOfBug);
 
 // ES5 15.4.4.15
 // http://es5.github.com/#x15.4.4.15
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/lastIndexOf
-if (!Array.prototype.lastIndexOf || ([0, 1].lastIndexOf(0, -3) != -1)) {
-    Array.prototype.lastIndexOf = function lastIndexOf(sought /*, fromIndex */) {
-        var self = splitString && _toString(this) == "[object String]" ?
-                this.split("") :
-                toObject(this),
+var hasFirefox2LastIndexOfBug = Array.prototype.lastIndexOf && [0, 1].lastIndexOf(0, -3) !== -1;
+defineProperties(ArrayPrototype, {
+    lastIndexOf: function lastIndexOf(sought /*, fromIndex */) {
+        var self = splitString && isString(this) ? this.split('') : toObject(this),
             length = self.length >>> 0;
 
         if (!length) {
@@ -818,8 +729,8 @@ if (!Array.prototype.lastIndexOf || ([0, 1].lastIndexOf(0, -3) != -1)) {
             }
         }
         return -1;
-    };
-}
+    }
+}, hasFirefox2LastIndexOfBug);
 
 //
 // Object
@@ -828,52 +739,74 @@ if (!Array.prototype.lastIndexOf || ([0, 1].lastIndexOf(0, -3) != -1)) {
 
 // ES5 15.2.3.14
 // http://es5.github.com/#x15.2.3.14
-if (!Object.keys) {
-    // http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
-    var hasDontEnumBug = true,
-        dontEnums = [
-            "toString",
-            "toLocaleString",
-            "valueOf",
-            "hasOwnProperty",
-            "isPrototypeOf",
-            "propertyIsEnumerable",
-            "constructor"
-        ],
-        dontEnumsLength = dontEnums.length;
 
-    for (var key in {"toString": null}) {
-        hasDontEnumBug = false;
-    }
+// http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
+var hasDontEnumBug = !({'toString': null}).propertyIsEnumerable('toString'),
+    hasProtoEnumBug = (function () {}).propertyIsEnumerable('prototype'),
+    dontEnums = [
+        "toString",
+        "toLocaleString",
+        "valueOf",
+        "hasOwnProperty",
+        "isPrototypeOf",
+        "propertyIsEnumerable",
+        "constructor"
+    ],
+    dontEnumsLength = dontEnums.length;
 
-    Object.keys = function keys(object) {
+defineProperties(Object, {
+    keys: function keys(object) {
+        var isFn = isFunction(object),
+            isArgs = isArguments(object),
+            isObject = object !== null && typeof object === 'object',
+            isStr = isObject && isString(object);
 
-        if (
-            (typeof object != "object" && typeof object != "function") ||
-            object === null
-        ) {
+        if (!isObject && !isFn && !isArgs) {
             throw new TypeError("Object.keys called on a non-object");
         }
 
-        var keys = [];
-        for (var name in object) {
-            if (owns(object, name)) {
-                keys.push(name);
+        var theKeys = [];
+        var skipProto = hasProtoEnumBug && isFn;
+        if (isStr || isArgs) {
+            for (var i = 0; i < object.length; ++i) {
+                theKeys.push(String(i));
+            }
+        } else {
+            for (var name in object) {
+                if (!(skipProto && name === 'prototype') && owns(object, name)) {
+                    theKeys.push(String(name));
+                }
             }
         }
 
         if (hasDontEnumBug) {
-            for (var i = 0, ii = dontEnumsLength; i < ii; i++) {
-                var dontEnum = dontEnums[i];
-                if (owns(object, dontEnum)) {
-                    keys.push(dontEnum);
+            var ctor = object.constructor,
+                skipConstructor = ctor && ctor.prototype === object;
+            for (var j = 0; j < dontEnumsLength; j++) {
+                var dontEnum = dontEnums[j];
+                if (!(skipConstructor && dontEnum === 'constructor') && owns(object, dontEnum)) {
+                    theKeys.push(dontEnum);
                 }
             }
         }
-        return keys;
-    };
+        return theKeys;
+    }
+});
 
-}
+var keysWorksWithArguments = Object.keys && (function () {
+    // Safari 5.0 bug
+    return Object.keys(arguments).length === 2;
+}(1, 2));
+var originalKeys = Object.keys;
+defineProperties(Object, {
+    keys: function keys(object) {
+        if (isArguments(object)) {
+            return originalKeys(ArrayPrototype.slice.call(object));
+        } else {
+            return originalKeys(object);
+        }
+    }
+}, !keysWorksWithArguments);
 
 //
 // Date
@@ -887,13 +820,12 @@ if (!Object.keys) {
 // string format defined in 15.9.1.15. All fields are present in the String.
 // The time zone is always UTC, denoted by the suffix Z. If the time value of
 // this object is not a finite Number a RangeError exception is thrown.
-var negativeDate = -62198755200000,
-    negativeYearString = "-000001";
-if (
-    !Date.prototype.toISOString ||
-    (new Date(negativeDate).toISOString().indexOf(negativeYearString) === -1)
-) {
-    Date.prototype.toISOString = function toISOString() {
+var negativeDate = -62198755200000;
+var negativeYearString = "-000001";
+var hasNegativeDateBug = Date.prototype.toISOString && new Date(negativeDate).toISOString().indexOf(negativeYearString) === -1;
+
+defineProperties(Date.prototype, {
+    toISOString: function toISOString() {
         var result, length, value, year, month;
         if (!isFinite(this)) {
             throw new RangeError("Date.prototype.toISOString called on non-finite value.");
@@ -902,17 +834,15 @@ if (
         year = this.getUTCFullYear();
 
         month = this.getUTCMonth();
-        // see https://github.com/kriskowal/es5-shim/issues/111
+        // see https://github.com/es-shims/es5-shim/issues/111
         year += Math.floor(month / 12);
         month = (month % 12 + 12) % 12;
 
         // the date time string format is specified in 15.9.1.15.
-        result = [month + 1, this.getUTCDate(),
-            this.getUTCHours(), this.getUTCMinutes(), this.getUTCSeconds()];
+        result = [month + 1, this.getUTCDate(), this.getUTCHours(), this.getUTCMinutes(), this.getUTCSeconds()];
         year = (
             (year < 0 ? "-" : (year > 9999 ? "+" : "")) +
-            ("00000" + Math.abs(year))
-            .slice(0 <= year && year <= 9999 ? -4 : -6)
+            ("00000" + Math.abs(year)).slice(0 <= year && year <= 9999 ? -4 : -6)
         );
 
         length = result.length;
@@ -930,8 +860,8 @@ if (
             "T" + result.slice(2).join(":") + "." +
             ("000" + this.getUTCMilliseconds()).slice(-3) + "Z"
         );
-    };
-}
+    }
+}, hasNegativeDateBug);
 
 
 // ES5 15.9.5.44
@@ -971,7 +901,7 @@ if (!dateToJSONIsSupported) {
         // O with argument "toISOString".
         toISO = o.toISOString;
         // 5. If IsCallable(toISO) is false, throw a TypeError exception.
-        if (typeof toISO != "function") {
+        if (typeof toISO !== "function") {
             throw new TypeError("toISOString property is not callable");
         }
         // 6. Return the result of calling the [[Call]] internal method of
@@ -993,16 +923,19 @@ if (!dateToJSONIsSupported) {
 // http://es5.github.com/#x15.9.4.2
 // based on work shared by Daniel Friesen (dantman)
 // http://gist.github.com/303249
-if (!Date.parse || "Date.parse is buggy") {
+var supportsExtendedYears = Date.parse('+033658-09-27T01:46:40.000Z') === 1e15;
+var acceptsInvalidDates = !isNaN(Date.parse('2012-04-04T24:00:00.500Z')) || !isNaN(Date.parse('2012-11-31T23:59:59.000Z'));
+var doesNotParseY2KNewYear = isNaN(Date.parse("2000-01-01T00:00:00.000Z"));
+if (!Date.parse || doesNotParseY2KNewYear || acceptsInvalidDates || !supportsExtendedYears) {
     // XXX global assignment won't work in embeddings that use
     // an alternate object for the context.
-    Date = (function(NativeDate) {
+    Date = (function (NativeDate) {
 
         // Date.length === 7
         function Date(Y, M, D, h, m, s, ms) {
             var length = arguments.length;
             if (this instanceof NativeDate) {
-                var date = length == 1 && String(Y) === Y ? // isString(Y)
+                var date = length === 1 && String(Y) === Y ? // isString(Y)
                     // We explicitly pass it through parse:
                     new NativeDate(Date.parse(Y)) :
                     // We have to manually make calls depending on argument
@@ -1020,7 +953,7 @@ if (!Date.parse || "Date.parse is buggy") {
                 return date;
             }
             return NativeDate.apply(this, arguments);
-        };
+        }
 
         // 15.9.1.15 Date Time String Format.
         var isoDateExpression = new RegExp("^" +
@@ -1152,159 +1085,157 @@ if (!Date.now) {
 
 // ES5.1 15.7.4.5
 // http://es5.github.com/#x15.7.4.5
-if (!Number.prototype.toFixed || (0.00008).toFixed(3) !== '0.000' || (0.9).toFixed(0) === '0' || (1.255).toFixed(2) !== '1.25' || (1000000000000000128).toFixed(0) !== "1000000000000000128") {
-    // Hide these variables and functions
-    (function () {
-        var base, size, data, i;
+var hasToFixedBugs = NumberPrototype.toFixed && (
+  (0.00008).toFixed(3) !== '0.000'
+  || (0.9).toFixed(0) !== '1'
+  || (1.255).toFixed(2) !== '1.25'
+  || (1000000000000000128).toFixed(0) !== "1000000000000000128"
+);
 
-        base = 1e7;
-        size = 6;
-        data = [0, 0, 0, 0, 0, 0];
+var toFixedHelpers = {
+  base: 1e7,
+  size: 6,
+  data: [0, 0, 0, 0, 0, 0],
+  multiply: function multiply(n, c) {
+      var i = -1;
+      while (++i < toFixedHelpers.size) {
+          c += n * toFixedHelpers.data[i];
+          toFixedHelpers.data[i] = c % toFixedHelpers.base;
+          c = Math.floor(c / toFixedHelpers.base);
+      }
+  },
+  divide: function divide(n) {
+      var i = toFixedHelpers.size, c = 0;
+      while (--i >= 0) {
+          c += toFixedHelpers.data[i];
+          toFixedHelpers.data[i] = Math.floor(c / n);
+          c = (c % n) * toFixedHelpers.base;
+      }
+  },
+  numToString: function numToString() {
+      var i = toFixedHelpers.size;
+      var s = '';
+      while (--i >= 0) {
+          if (s !== '' || i === 0 || toFixedHelpers.data[i] !== 0) {
+              var t = String(toFixedHelpers.data[i]);
+              if (s === '') {
+                  s = t;
+              } else {
+                  s += '0000000'.slice(0, 7 - t.length) + t;
+              }
+          }
+      }
+      return s;
+  },
+  pow: function pow(x, n, acc) {
+      return (n === 0 ? acc : (n % 2 === 1 ? pow(x, n - 1, acc * x) : pow(x * x, n / 2, acc)));
+  },
+  log: function log(x) {
+      var n = 0;
+      while (x >= 4096) {
+          n += 12;
+          x /= 4096;
+      }
+      while (x >= 2) {
+          n += 1;
+          x /= 2;
+      }
+      return n;
+  }
+};
 
-        function multiply(n, c) {
-            var i = -1;
-            while (++i < size) {
-                c += n * data[i];
-                data[i] = c % base;
-                c = Math.floor(c / base);
-            }
+defineProperties(NumberPrototype, {
+    toFixed: function toFixed(fractionDigits) {
+        var f, x, s, m, e, z, j, k;
+
+        // Test for NaN and round fractionDigits down
+        f = Number(fractionDigits);
+        f = f !== f ? 0 : Math.floor(f);
+
+        if (f < 0 || f > 20) {
+            throw new RangeError("Number.toFixed called with invalid number of decimals");
         }
 
-        function divide(n) {
-            var i = size, c = 0;
-            while (--i >= 0) {
-                c += data[i];
-                data[i] = Math.floor(c / n);
-                c = (c % n) * base;
-            }
+        x = Number(this);
+
+        // Test for NaN
+        if (x !== x) {
+            return "NaN";
         }
 
-        function toString() {
-            var i = size;
-            var s = '';
-            while (--i >= 0) {
-                if (s !== '' || i === 0 || data[i] !== 0) {
-                    var t = String(data[i]);
-                    if (s === '') {
-                        s = t;
-                    } else {
-                        s += '0000000'.slice(0, 7 - t.length) + t;
-                    }
+        // If it is too big or small, return the string value of the number
+        if (x <= -1e21 || x >= 1e21) {
+            return String(x);
+        }
+
+        s = "";
+
+        if (x < 0) {
+            s = "-";
+            x = -x;
+        }
+
+        m = "0";
+
+        if (x > 1e-21) {
+            // 1e-21 < x < 1e21
+            // -70 < log2(x) < 70
+            e = toFixedHelpers.log(x * toFixedHelpers.pow(2, 69, 1)) - 69;
+            z = (e < 0 ? x * toFixedHelpers.pow(2, -e, 1) : x / toFixedHelpers.pow(2, e, 1));
+            z *= 0x10000000000000; // Math.pow(2, 52);
+            e = 52 - e;
+
+            // -18 < e < 122
+            // x = z / 2 ^ e
+            if (e > 0) {
+                toFixedHelpers.multiply(0, z);
+                j = f;
+
+                while (j >= 7) {
+                    toFixedHelpers.multiply(1e7, 0);
+                    j -= 7;
                 }
-            }
-            return s;
-        }
 
-        function pow(x, n, acc) {
-            return (n === 0 ? acc : (n % 2 === 1 ? pow(x, n - 1, acc * x) : pow(x * x, n / 2, acc)));
-        }
+                toFixedHelpers.multiply(toFixedHelpers.pow(10, j, 1), 0);
+                j = e - 1;
 
-        function log(x) {
-            var n = 0;
-            while (x >= 4096) {
-                n += 12;
-                x /= 4096;
-            }
-            while (x >= 2) {
-                n += 1;
-                x /= 2;
-            }
-            return n;
-        }
-
-        Number.prototype.toFixed = function (fractionDigits) {
-            var f, x, s, m, e, z, j, k;
-
-            // Test for NaN and round fractionDigits down
-            f = Number(fractionDigits);
-            f = f !== f ? 0 : Math.floor(f);
-
-            if (f < 0 || f > 20) {
-                throw new RangeError("Number.toFixed called with invalid number of decimals");
-            }
-
-            x = Number(this);
-
-            // Test for NaN
-            if (x !== x) {
-                return "NaN";
-            }
-
-            // If it is too big or small, return the string value of the number
-            if (x <= -1e21 || x >= 1e21) {
-                return String(x);
-            }
-
-            s = "";
-
-            if (x < 0) {
-                s = "-";
-                x = -x;
-            }
-
-            m = "0";
-
-            if (x > 1e-21) {
-                // 1e-21 < x < 1e21
-                // -70 < log2(x) < 70
-                e = log(x * pow(2, 69, 1)) - 69;
-                z = (e < 0 ? x * pow(2, -e, 1) : x / pow(2, e, 1));
-                z *= 0x10000000000000; // Math.pow(2, 52);
-                e = 52 - e;
-
-                // -18 < e < 122
-                // x = z / 2 ^ e
-                if (e > 0) {
-                    multiply(0, z);
-                    j = f;
-
-                    while (j >= 7) {
-                        multiply(1e7, 0);
-                        j -= 7;
-                    }
-
-                    multiply(pow(10, j, 1), 0);
-                    j = e - 1;
-
-                    while (j >= 23) {
-                        divide(1 << 23);
-                        j -= 23;
-                    }
-
-                    divide(1 << j);
-                    multiply(1, 1);
-                    divide(2);
-                    m = toString();
-                } else {
-                    multiply(0, z);
-                    multiply(1 << (-e), 0);
-                    m = toString() + '0.00000000000000000000'.slice(2, 2 + f);
+                while (j >= 23) {
+                    toFixedHelpers.divide(1 << 23);
+                    j -= 23;
                 }
-            }
 
-            if (f > 0) {
-                k = m.length;
-
-                if (k <= f) {
-                    m = s + '0.0000000000000000000'.slice(0, f - k + 2) + m;
-                } else {
-                    m = s + m.slice(0, k - f) + '.' + m.slice(k - f);
-                }
+                toFixedHelpers.divide(1 << j);
+                toFixedHelpers.multiply(1, 1);
+                toFixedHelpers.divide(2);
+                m = toFixedHelpers.numToString();
             } else {
-                m = s + m;
+                toFixedHelpers.multiply(0, z);
+                toFixedHelpers.multiply(1 << (-e), 0);
+                m = toFixedHelpers.numToString() + '0.00000000000000000000'.slice(2, 2 + f);
             }
-
-            return m;
         }
-    }());
-}
+
+        if (f > 0) {
+            k = m.length;
+
+            if (k <= f) {
+                m = s + '0.0000000000000000000'.slice(0, f - k + 2) + m;
+            } else {
+                m = s + m.slice(0, k - f) + '.' + m.slice(k - f);
+            }
+        } else {
+            m = s + m;
+        }
+
+        return m;
+    }
+}, hasToFixedBugs);
 
 
 //
 // String
 // ======
 //
-
 
 // ES5 15.5.4.14
 // http://es5.github.com/#x15.5.4.14
@@ -1321,25 +1252,27 @@ if (!Number.prototype.toFixed || (0.00008).toFixed(3) !== '0.000' || (0.9).toFix
 //    ''.split(/.?/) should be [], not [""]
 //    '.'.split(/()()/) should be ["."], not ["", "", "."]
 
-var string_split = String.prototype.split;
+var string_split = StringPrototype.split;
 if (
     'ab'.split(/(?:ab)*/).length !== 2 ||
     '.'.split(/(.?)(.?)/).length !== 4 ||
     'tesst'.split(/(s)*/)[1] === "t" ||
-    ''.split(/.?/).length === 0 ||
+    'test'.split(/(?:)/, -1).length !== 4 ||
+    ''.split(/.?/).length ||
     '.'.split(/()()/).length > 1
 ) {
     (function () {
         var compliantExecNpcg = /()??/.exec("")[1] === void 0; // NPCG: nonparticipating capturing group
 
-        String.prototype.split = function (separator, limit) {
+        StringPrototype.split = function (separator, limit) {
             var string = this;
-            if (separator === void 0 && limit === 0)
+            if (separator === void 0 && limit === 0) {
                 return [];
+            }
 
             // If `separator` is not a regex, use native split
-            if (Object.prototype.toString.call(separator) !== "[object RegExp]") {
-                return string_split.apply(this, arguments);
+            if (_toString.call(separator) !== "[object RegExp]") {
+                return string_split.call(this, separator, limit);
             }
 
             var output = [],
@@ -1349,8 +1282,8 @@ if (
                         (separator.sticky     ? "y" : ""), // Firefox 3+
                 lastLastIndex = 0,
                 // Make `global` and avoid `lastIndex` issues by working with a copy
-                separator = new RegExp(separator.source, flags + "g"),
                 separator2, match, lastIndex, lastLength;
+            separator = new RegExp(separator.source, flags + "g");
             string += ""; // Type-convert
             if (!compliantExecNpcg) {
                 // Doesn't need flags gy, but they don't hurt
@@ -1365,7 +1298,7 @@ if (
              */
             limit = limit === void 0 ?
                 -1 >>> 0 : // Math.pow(2, 32) - 1
-                limit >>> 0; // ToUint32(limit)
+                ToUint32(limit);
             while (match = separator.exec(string)) {
                 // `separator.lastIndex` is not reliable cross-browser
                 lastIndex = match.index + match[0].length;
@@ -1383,7 +1316,7 @@ if (
                         });
                     }
                     if (match.length > 1 && match.index < string.length) {
-                        Array.prototype.push.apply(output, match.slice(1));
+                        ArrayPrototype.push.apply(output, match.slice(1));
                     }
                     lastLength = match[0].length;
                     lastLastIndex = lastIndex;
@@ -1413,408 +1346,1905 @@ if (
 // elements.
 // "0".split(undefined, 0) -> []
 } else if ("0".split(void 0, 0).length) {
-    String.prototype.split = function(separator, limit) {
-        if (separator === void 0 && limit === 0) return [];
-        return string_split.apply(this, arguments);
-    }
+    StringPrototype.split = function split(separator, limit) {
+        if (separator === void 0 && limit === 0) { return []; }
+        return string_split.call(this, separator, limit);
+    };
 }
 
+var str_replace = StringPrototype.replace;
+var replaceReportsGroupsCorrectly = (function () {
+    var groups = [];
+    'x'.replace(/x(.)?/g, function (match, group) {
+        groups.push(group);
+    });
+    return groups.length === 1 && typeof groups[0] === 'undefined';
+}());
+
+if (!replaceReportsGroupsCorrectly) {
+    StringPrototype.replace = function replace(searchValue, replaceValue) {
+        var isFn = isFunction(replaceValue);
+        var hasCapturingGroups = isRegex(searchValue) && (/\)[*?]/).test(searchValue.source);
+        if (!isFn || !hasCapturingGroups) {
+            return str_replace.call(this, searchValue, replaceValue);
+        } else {
+            var wrappedReplaceValue = function (match) {
+                var length = arguments.length;
+                var originalLastIndex = searchValue.lastIndex;
+                searchValue.lastIndex = 0;
+                var args = searchValue.exec(match) || [];
+                searchValue.lastIndex = originalLastIndex;
+                args.push(arguments[length - 2], arguments[length - 1]);
+                return replaceValue.apply(this, args);
+            };
+            return str_replace.call(this, searchValue, wrappedReplaceValue);
+        }
+    };
+}
 
 // ECMA-262, 3rd B.2.3
-// Note an ECMAScript standart, although ECMAScript 3rd Edition has a
+// Not an ECMAScript standard, although ECMAScript 3rd Edition has a
 // non-normative section suggesting uniform semantics and it should be
 // normalized across all browsers
 // [bugfix, IE lt 9] IE < 9 substr() with negative value not working in IE
-if("".substr && "0b".substr(-1) !== "b") {
-    var string_substr = String.prototype.substr;
-    /**
-     *  Get the substring of a string
-     *  @param  {integer}  start   where to start the substring
-     *  @param  {integer}  length  how many characters to return
-     *  @return {string}
-     */
-    String.prototype.substr = function(start, length) {
+var string_substr = StringPrototype.substr;
+var hasNegativeSubstrBug = "".substr && "0b".substr(-1) !== "b";
+defineProperties(StringPrototype, {
+    substr: function substr(start, length) {
         return string_substr.call(
             this,
             start < 0 ? ((start = this.length + start) < 0 ? 0 : start) : start,
             length
         );
     }
-}
+}, hasNegativeSubstrBug);
 
 // ES5 15.5.4.20
-// http://es5.github.com/#x15.5.4.20
+// whitespace from: http://es5.github.io/#x15.5.4.20
 var ws = "\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003" +
     "\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028" +
     "\u2029\uFEFF";
-if (!String.prototype.trim || ws.trim()) {
+var zeroWidth = '\u200b';
+var wsRegexChars = "[" + ws + "]";
+var trimBeginRegexp = new RegExp("^" + wsRegexChars + wsRegexChars + "*");
+var trimEndRegexp = new RegExp(wsRegexChars + wsRegexChars + "*$");
+var hasTrimWhitespaceBug = StringPrototype.trim && (ws.trim() || !zeroWidth.trim());
+defineProperties(StringPrototype, {
     // http://blog.stevenlevithan.com/archives/faster-trim-javascript
     // http://perfectionkills.com/whitespace-deviations/
-    ws = "[" + ws + "]";
-    var trimBeginRegexp = new RegExp("^" + ws + ws + "*"),
-        trimEndRegexp = new RegExp(ws + ws + "*$");
-    String.prototype.trim = function trim() {
+    trim: function trim() {
         if (this === void 0 || this === null) {
-            throw new TypeError("can't convert "+this+" to object");
+            throw new TypeError("can't convert " + this + " to object");
         }
-        return String(this)
-            .replace(trimBeginRegexp, "")
-            .replace(trimEndRegexp, "");
-    };
-}
-
-//
-// Util
-// ======
-//
-
-// ES5 9.4
-// http://es5.github.com/#x9.4
-// http://jsperf.com/to-integer
-
-function toInteger(n) {
-    n = +n;
-    if (n !== n) { // isNaN
-        n = 0;
-    } else if (n !== 0 && n !== (1/0) && n !== -(1/0)) {
-        n = (n > 0 || -1) * Math.floor(Math.abs(n));
+        return String(this).replace(trimBeginRegexp, "").replace(trimEndRegexp, "");
     }
-    return n;
+}, hasTrimWhitespaceBug);
+
+// ES-5 15.1.2.2
+if (parseInt(ws + '08') !== 8 || parseInt(ws + '0x16') !== 22) {
+    parseInt = (function (origParseInt) {
+        var hexRegex = /^0[xX]/;
+        return function parseIntES5(str, radix) {
+            str = String(str).trim();
+            if (!Number(radix)) {
+                radix = hexRegex.test(str) ? 16 : 10;
+            }
+            return origParseInt(str, radix);
+        };
+    }(parseInt));
 }
 
-function isPrimitive(input) {
-    var type = typeof input;
-    return (
-        input === null ||
-        type === "undefined" ||
-        type === "boolean" ||
-        type === "number" ||
-        type === "string"
-    );
+}));
+/*!
+ * https://github.com/es-shims/es5-shim
+ * @license es5-shim Copyright 2009-2014 by contributors, MIT License
+ * see https://github.com/es-shims/es5-shim/blob/master/LICENSE
+ */
+
+// vim: ts=4 sts=4 sw=4 expandtab
+
+//Add semicolon to prevent IIFE from being passed as argument to concated code.
+;
+
+// UMD (Universal Module Definition)
+// see https://github.com/umdjs/umd/blob/master/returnExports.js
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(factory);
+    } else if (typeof exports === 'object') {
+        // Node. Does not work with strict CommonJS, but
+        // only CommonJS-like enviroments that support module.exports,
+        // like Node.
+        module.exports = factory();
+    } else {
+        // Browser globals (root is window)
+        root.returnExports = factory();
+  }
+}(this, function () {
+
+var call = Function.prototype.call;
+var prototypeOfObject = Object.prototype;
+var owns = call.bind(prototypeOfObject.hasOwnProperty);
+
+// If JS engine supports accessors creating shortcuts.
+var defineGetter;
+var defineSetter;
+var lookupGetter;
+var lookupSetter;
+var supportsAccessors = owns(prototypeOfObject, "__defineGetter__");
+if (supportsAccessors) {
+    defineGetter = call.bind(prototypeOfObject.__defineGetter__);
+    defineSetter = call.bind(prototypeOfObject.__defineSetter__);
+    lookupGetter = call.bind(prototypeOfObject.__lookupGetter__);
+    lookupSetter = call.bind(prototypeOfObject.__lookupSetter__);
 }
 
-function toPrimitive(input) {
-    var val, valueOf, toString;
-    if (isPrimitive(input)) {
-        return input;
-    }
-    valueOf = input.valueOf;
-    if (typeof valueOf === "function") {
-        val = valueOf.call(input);
-        if (isPrimitive(val)) {
-            return val;
+// ES5 15.2.3.2
+// http://es5.github.com/#x15.2.3.2
+if (!Object.getPrototypeOf) {
+    // https://github.com/es-shims/es5-shim/issues#issue/2
+    // http://ejohn.org/blog/objectgetprototypeof/
+    // recommended by fschaefer on github
+    //
+    // sure, and webreflection says ^_^
+    // ... this will nerever possibly return null
+    // ... Opera Mini breaks here with infinite loops
+    Object.getPrototypeOf = function getPrototypeOf(object) {
+        var proto = object.__proto__;
+        if (proto || proto === null) {
+            return proto;
+        } else if (object.constructor) {
+            return object.constructor.prototype;
+        } else {
+            return prototypeOfObject;
         }
-    }
-    toString = input.toString;
-    if (typeof toString === "function") {
-        val = toString.call(input);
-        if (isPrimitive(val)) {
-            return val;
-        }
-    }
-    throw new TypeError();
-}
-
-// ES5 9.9
-// http://es5.github.com/#x9.9
-var toObject = function (o) {
-    if (o == null) { // this matches both null and undefined
-        throw new TypeError("can't convert "+o+" to object");
-    }
-    return Object(o);
-};
-
-});
-// see https://github.com/jonathantneal/polyfill
-// Window.prototype.getComputedStyle
-!('getComputedStyle' in Window.prototype) && (function () {
-	function getComputedStylePixel(element, property, fontSize) {
-		element.document; // Internet Explorer sometimes struggles to read currentStyle until the element's document is accessed.
-
-		var
-		value = element.currentStyle[property].match(/([\d\.]+)(%|cm|em|in|mm|pc|pt|)/) || [0, 0, ''],
-		size = value[1],
-		suffix = value[2],
-		rootSize;
-
-		fontSize = !fontSize ? fontSize : /%|em/.test(suffix) && element.parentElement ? getComputedStylePixel(element.parentElement, 'fontSize', null) : 16;
-		rootSize = property == 'fontSize' ? fontSize : /width/i.test(property) ? element.clientWidth : element.clientHeight;
-
-		return suffix == '%' ? size / 100 * rootSize :
-		       suffix == 'cm' ? size * 0.3937 * 96 :
-		       suffix == 'em' ? size * fontSize :
-		       suffix == 'in' ? size * 96 :
-		       suffix == 'mm' ? size * 0.3937 * 96 / 10 :
-		       suffix == 'pc' ? size * 12 * 96 / 72 :
-		       suffix == 'pt' ? size * 96 / 72 :
-		       size;
-	}
-
-	function setShortStyleProperty(style, property) {
-		var
-		borderSuffix = property == 'border' ? 'Width' : '',
-		t = property + 'Top' + borderSuffix,
-		r = property + 'Right' + borderSuffix,
-		b = property + 'Bottom' + borderSuffix,
-		l = property + 'Left' + borderSuffix;
-
-		style[property] = (style[t] == style[r] && style[t] == style[b] && style[t] == style[l] ? [ style[t] ] :
-		                   style[t] == style[b] && style[l] == style[r] ? [ style[t], style[r] ] :
-		                   style[l] == style[r] ? [ style[t], style[r], style[b] ] :
-		                   [ style[t], style[r], style[b], style[l] ]).join(' ');
-	}
-
-	// <CSSStyleDeclaration>
-	function CSSStyleDeclaration(element) {
-		var
-		style = this,
-		currentStyle = element.currentStyle,
-		fontSize = getComputedStylePixel(element, 'fontSize'),
-		unCamelCase = function (match) {
-			return '-' + match.toLowerCase();
-		},
-		property;
-
-		for (property in currentStyle) {
-			Array.prototype.push.call(style, property == 'styleFloat' ? 'float' : property.replace(/[A-Z]/, unCamelCase));
-
-			if (property == 'width') {
-				style[property] = element.offsetWidth + 'px';
-			} else if (property == 'height') {
-				style[property] = element.offsetHeight + 'px';
-			} else if (property == 'styleFloat') {
-				style.float = currentStyle[property];
-			} else if (/margin.|padding.|border.+W/.test(property) && style[property] != 'auto') {
-				style[property] = Math.round(getComputedStylePixel(element, property, fontSize)) + 'px';
-			} else if (/^outline/.test(property)) {
-				// errors on checking outline
-				try {
-					style[property] = currentStyle[property];
-				} catch (error) {
-					style.outlineColor = currentStyle.color;
-					style.outlineStyle = style.outlineStyle || 'none';
-					style.outlineWidth = style.outlineWidth || '0px';
-					style.outline = [style.outlineColor, style.outlineWidth, style.outlineStyle].join(' ');
-				}
-			} else {
-				style[property] = currentStyle[property];
-			}
-		}
-
-		setShortStyleProperty(style, 'margin');
-		setShortStyleProperty(style, 'padding');
-		setShortStyleProperty(style, 'border');
-
-		style.fontSize = Math.round(fontSize) + 'px';
-	}
-
-	CSSStyleDeclaration.prototype = {
-		constructor: CSSStyleDeclaration,
-		// <CSSStyleDeclaration>.getPropertyPriority
-		getPropertyPriority: function () {
-			throw new Error('NotSupportedError: DOM Exception 9');
-		},
-		// <CSSStyleDeclaration>.getPropertyValue
-		getPropertyValue: function (property) {
-			return this[property.replace(/-\w/g, function (match) {
-				return match[1].toUpperCase();
-			})];
-		},
-		// <CSSStyleDeclaration>.item
-		item: function (index) {
-			return this[index];
-		},
-		// <CSSStyleDeclaration>.removeProperty
-		removeProperty: function () {
-			throw new Error('NoModificationAllowedError: DOM Exception 7');
-		},
-		// <CSSStyleDeclaration>.setProperty
-		setProperty: function () {
-			throw new Error('NoModificationAllowedError: DOM Exception 7');
-		},
-		// <CSSStyleDeclaration>.getPropertyCSSValue
-		getPropertyCSSValue: function () {
-			throw new Error('NotSupportedError: DOM Exception 9');
-		}
-	};
-
-	// <window>.getComputedStyle
-	window.getComputedStyle = Window.prototype.getComputedStyle = function (element) {
-		return new CSSStyleDeclaration(element);
-	};
-})();
-if (!CSSStyleDeclaration.prototype.getPropertyValue) {
-    CSSStyleDeclaration.prototype.getPropertyValue = function(a) {
-        return this.getAttribute(a);
-    };
-    CSSStyleDeclaration.prototype.setProperty = function(a, b) {
-        return this.setAttribute(String(a), b);
-    };
-    CSSStyleDeclaration.prototype.removeProperty = function(a) {
-        return this.removeAttribute(a);
     };
 }
-if (!('createElementNS' in HTMLDocument.prototype)) {
-    HTMLDocument.prototype.createElementNS = function(ns, name) {
-        if (ns) throw "sorry, this browser does not support namespaces";
-        return HTMLDocument.prototype.createElement.call(this, name);
-    };
-}
-!window.addEventListener && (function (WindowPrototype, DocumentPrototype, ElementPrototype, addEventListener, removeEventListener, dispatchEvent, registry) {
-    WindowPrototype[addEventListener] = DocumentPrototype[addEventListener] = ElementPrototype[addEventListener] = function (type, listener) {
-		var target = this;
- 
-		registry.unshift([target, type, listener, function (event) {
-			event.currentTarget = target;
-			event.preventDefault = function () { event.returnValue = false; };
-			event.stopPropagation = function () { event.cancelBubble = true; };
-			event.target = event.srcElement || target;
- 
-			listener.call(target, event);
-		}]);
- 
-		this.attachEvent("on" + type, registry[0][3]);
-	};
- 
-	WindowPrototype[removeEventListener] = DocumentPrototype[removeEventListener] = ElementPrototype[removeEventListener] = function (type, listener) {
-		for (var index = 0, register; (register = registry[index]); ++index) {
-			if (register[0] == this && register[1] == type && register[2] == listener) {
-				return this.detachEvent("on" + type, registry.splice(index, 1)[0][3]);
-			}
-		}
-	};
- 
-	WindowPrototype[dispatchEvent] = DocumentPrototype[dispatchEvent] = ElementPrototype[dispatchEvent] = function (eventObject) {
-		return this.fireEvent("on" + eventObject.type, eventObject);
-	};
-})(Window.prototype, HTMLDocument.prototype, Element.prototype, "addEventListener", "removeEventListener", "dispatchEvent", []);
-(function() {
+
+//ES5 15.2.3.3
+//http://es5.github.com/#x15.2.3.3
+
+function doesGetOwnPropertyDescriptorWork(object) {
     try {
-        // inspired by Eli Grey's shim @ http://eligrey.com/blog/post/textcontent-in-ie8
-        // heavily modified to better match the spec:
-        // http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#Node3-textContent
-        if (Object.defineProperty && Object.getOwnPropertyDescriptor &&
-            Object.getOwnPropertyDescriptor(Element.prototype, "textContent") &&
-            !Object.getOwnPropertyDescriptor(Element.prototype, "textContent").get) {
-
-            // NOTE: Neither of these "drop-in" patterns would work:
-            // Object.defineProperty(..., ..., descriptor); // nope!
-            // Object.defineProperty(..., ..., { get: descriptor.get, set: descriptor.set }); // nope!
-            // So must use function-wrapped descriptor.fn.call pattern.
-
-            // "Normal" Elements
-            // NOTE: textContent is different from innerText, so its use would be incorrect:
-            //var innerText = Object.getOwnPropertyDescriptor(Element.prototype, "innerText"); // nope!
-            var getTextContent = function(x) {
-		var c = this.firstChild;
-		var tc=[];
-                // append the textContent of its children
-		while(!!c) {
-                    if (c.nodeType !== 8 && c.nodeType !== 7) { // skip comments
-                        tc.push(c.textContent);
-                    }
-		    c = c.nextSibling;
-		}
-		// a <br> Element should show as a newline
-		if (this.tagName === 'BR') { tc.push('\n'); }
-		c = null;
-		tc = tc.join('');
-		return tc;
-	    };
-            var setTextContent = function(x) {
-                    var c;
-                    while(!!(c=this.lastChild)) {
-                        this.removeChild(c);
-                    }
-                    if (x!==null) {
-                        c=document.createTextNode(x);
-                        this.appendChild(c);
-                    }
-                    return x;
-            };
-            Object.defineProperty(Element.prototype, "textContent", {
-                get: function() {
-                    // return innerText.get.call(this); // not good enough!
-                    return getTextContent.call(this);
-                },
-                set: function(x) {
-                    // return innerText.set.call(this, x); // not good enough!
-                    return setTextContent.call(this, x);
-                }
-            });
-	    // <script> Elements
-            var scriptText = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, "text");
-            Object.defineProperty(HTMLScriptElement.prototype, "textContent", {
-                get: function() {
-                    return scriptText.get.call(this);
-                },
-                set: function(x) {
-                    return scriptText.set.call(this, x);
-                }
-            });
-	    // <style> Elements
-            var cssText = Object.getOwnPropertyDescriptor(CSSStyleSheet.prototype, "cssText");
-            Object.defineProperty(HTMLStyleElement.prototype, "textContent", {
-                get: function() {
-                    return cssText.get.call(this.styleSheet);
-                },
-                set: function(x) {
-                    return cssText.set.call(this.styleSheet, x);
-                }
-            });
-	    // <title> Elements
-            var titleText = Object.getOwnPropertyDescriptor(HTMLTitleElement.prototype, "text");
-            Object.defineProperty(HTMLTitleElement.prototype, "textContent", {
-                get: function() {
-                    return titleText.get.call(this);
-                },
-                set: function(x) {
-                    return titleText.set.call(this, x);
-                }
-            });
-            // Text nodes
-            var textNodeValue = Object.getOwnPropertyDescriptor(Text.prototype, "nodeValue");
-            Object.defineProperty(Text.prototype, "textContent", {
-                get: function() {
-                    return textNodeValue.get.call(this);
-                },
-                set: function(x) {
-                    return textNodeValue.set.call(this, x);
-                }
-            });
-            // Comments (and possibly other weird Node types that are treated as comments in IE)
-            var elementNodeValue = Object.getOwnPropertyDescriptor(Element.prototype, "nodeValue");
-            Object.defineProperty(HTMLCommentElement.prototype, "textContent", {
-                get: function() {
-                    return elementNodeValue.get.call(this);
-                },
-                set: function(x) {
-                    return elementNodeValue.set.call(this, x);
-                }
-            });
-            // Document and DocumentFragment Nodes
-            // NOTE: IE8 seems to reuse HTMLDocument for both, so have to check nodeType explicitly
-            var documentNodeValue = Object.getOwnPropertyDescriptor(HTMLDocument.prototype, "nodeValue");
-            Object.defineProperty(HTMLDocument.prototype, "textContent", {
-                get: function() {
-                    // document fragments have textContent
-                    if (this.nodeType === 11) {
-                        return getTextContent.call(this);
-                    }
-                    // a true Document's textContent is always null
-                    return null; // === documentNodeValue.get.call(this);
-                },
-                set: function(x) {
-                    if (this.nodeType === 11) {
-                        return setTextContent.call(this, x);
-                    }
-                    // setting a Document's textContent has no side effects
-                    return x; // === documentNodeValue.set.call(this, x);
-                }
-            });
-            // other Node types are either deprecated or don't matter in HTML5/IE standards mode
-        }
-    } catch (e) {
-        // bad Firefox
+        object.sentinel = 0;
+        return Object.getOwnPropertyDescriptor(
+                object,
+                "sentinel"
+        ).value === 0;
+    } catch (exception) {
+        // returns falsy
     }
-})();
+}
+
+//check whether getOwnPropertyDescriptor works if it's given. Otherwise,
+//shim partially.
+if (Object.defineProperty) {
+    var getOwnPropertyDescriptorWorksOnObject = doesGetOwnPropertyDescriptorWork({});
+    var getOwnPropertyDescriptorWorksOnDom = typeof document === "undefined" ||
+    doesGetOwnPropertyDescriptorWork(document.createElement("div"));
+    if (!getOwnPropertyDescriptorWorksOnDom || !getOwnPropertyDescriptorWorksOnObject) {
+        var getOwnPropertyDescriptorFallback = Object.getOwnPropertyDescriptor;
+    }
+}
+
+if (!Object.getOwnPropertyDescriptor || getOwnPropertyDescriptorFallback) {
+    var ERR_NON_OBJECT = "Object.getOwnPropertyDescriptor called on a non-object: ";
+
+    Object.getOwnPropertyDescriptor = function getOwnPropertyDescriptor(object, property) {
+        if ((typeof object !== "object" && typeof object !== "function") || object === null) {
+            throw new TypeError(ERR_NON_OBJECT + object);
+        }
+
+        // make a valiant attempt to use the real getOwnPropertyDescriptor
+        // for I8's DOM elements.
+        if (getOwnPropertyDescriptorFallback) {
+            try {
+                return getOwnPropertyDescriptorFallback.call(Object, object, property);
+            } catch (exception) {
+                // try the shim if the real one doesn't work
+            }
+        }
+
+        // If object does not owns property return undefined immediately.
+        if (!owns(object, property)) {
+            return;
+        }
+
+        // If object has a property then it's for sure both `enumerable` and
+        // `configurable`.
+        var descriptor =  { enumerable: true, configurable: true };
+
+        // If JS engine supports accessor properties then property may be a
+        // getter or setter.
+        if (supportsAccessors) {
+            // Unfortunately `__lookupGetter__` will return a getter even
+            // if object has own non getter property along with a same named
+            // inherited getter. To avoid misbehavior we temporary remove
+            // `__proto__` so that `__lookupGetter__` will return getter only
+            // if it's owned by an object.
+            var prototype = object.__proto__;
+            var notPrototypeOfObject = object !== prototypeOfObject;
+            // avoid recursion problem, breaking in Opera Mini when
+            // Object.getOwnPropertyDescriptor(Object.prototype, 'toString')
+            // or any other Object.prototype accessor
+            if (notPrototypeOfObject) {
+                object.__proto__ = prototypeOfObject;
+            }
+
+            var getter = lookupGetter(object, property);
+            var setter = lookupSetter(object, property);
+
+            if (notPrototypeOfObject) {
+                // Once we have getter and setter we can put values back.
+                object.__proto__ = prototype;
+            }
+
+            if (getter || setter) {
+                if (getter) {
+                    descriptor.get = getter;
+                }
+                if (setter) {
+                    descriptor.set = setter;
+                }
+                // If it was accessor property we're done and return here
+                // in order to avoid adding `value` to the descriptor.
+                return descriptor;
+            }
+        }
+
+        // If we got this far we know that object has an own property that is
+        // not an accessor so we set it as a value and return descriptor.
+        descriptor.value = object[property];
+        descriptor.writable = true;
+        return descriptor;
+    };
+}
+
+// ES5 15.2.3.4
+// http://es5.github.com/#x15.2.3.4
+if (!Object.getOwnPropertyNames) {
+    Object.getOwnPropertyNames = function getOwnPropertyNames(object) {
+        return Object.keys(object);
+    };
+}
+
+// ES5 15.2.3.5
+// http://es5.github.com/#x15.2.3.5
+if (!Object.create) {
+
+    // Contributed by Brandon Benvie, October, 2012
+    var createEmpty;
+    var supportsProto = !({__proto__:null} instanceof Object);
+                        // the following produces false positives
+                        // in Opera Mini => not a reliable check
+                        // Object.prototype.__proto__ === null
+    if (supportsProto || typeof document === 'undefined') {
+        createEmpty = function () {
+            return { "__proto__": null };
+        };
+    } else {
+        // In old IE __proto__ can't be used to manually set `null`, nor does
+        // any other method exist to make an object that inherits from nothing,
+        // aside from Object.prototype itself. Instead, create a new global
+        // object and *steal* its Object.prototype and strip it bare. This is
+        // used as the prototype to create nullary objects.
+        createEmpty = function () {
+            var iframe = document.createElement('iframe');
+            var parent = document.body || document.documentElement;
+            iframe.style.display = 'none';
+            parent.appendChild(iframe);
+            iframe.src = 'javascript:';
+            var empty = iframe.contentWindow.Object.prototype;
+            parent.removeChild(iframe);
+            iframe = null;
+            delete empty.constructor;
+            delete empty.hasOwnProperty;
+            delete empty.propertyIsEnumerable;
+            delete empty.isPrototypeOf;
+            delete empty.toLocaleString;
+            delete empty.toString;
+            delete empty.valueOf;
+            empty.__proto__ = null;
+
+            function Empty() {}
+            Empty.prototype = empty;
+            // short-circuit future calls
+            createEmpty = function () {
+                return new Empty();
+            };
+            return new Empty();
+        };
+    }
+
+    Object.create = function create(prototype, properties) {
+
+        var object;
+        function Type() {}  // An empty constructor.
+
+        if (prototype === null) {
+            object = createEmpty();
+        } else {
+            if (typeof prototype !== "object" && typeof prototype !== "function") {
+                // In the native implementation `parent` can be `null`
+                // OR *any* `instanceof Object`  (Object|Function|Array|RegExp|etc)
+                // Use `typeof` tho, b/c in old IE, DOM elements are not `instanceof Object`
+                // like they are in modern browsers. Using `Object.create` on DOM elements
+                // is...err...probably inappropriate, but the native version allows for it.
+                throw new TypeError("Object prototype may only be an Object or null"); // same msg as Chrome
+            }
+            Type.prototype = prototype;
+            object = new Type();
+            // IE has no built-in implementation of `Object.getPrototypeOf`
+            // neither `__proto__`, but this manually setting `__proto__` will
+            // guarantee that `Object.getPrototypeOf` will work as expected with
+            // objects created using `Object.create`
+            object.__proto__ = prototype;
+        }
+
+        if (properties !== void 0) {
+            Object.defineProperties(object, properties);
+        }
+
+        return object;
+    };
+}
+
+// ES5 15.2.3.6
+// http://es5.github.com/#x15.2.3.6
+
+// Patch for WebKit and IE8 standard mode
+// Designed by hax <hax.github.com>
+// related issue: https://github.com/es-shims/es5-shim/issues#issue/5
+// IE8 Reference:
+//     http://msdn.microsoft.com/en-us/library/dd282900.aspx
+//     http://msdn.microsoft.com/en-us/library/dd229916.aspx
+// WebKit Bugs:
+//     https://bugs.webkit.org/show_bug.cgi?id=36423
+
+function doesDefinePropertyWork(object) {
+    try {
+        Object.defineProperty(object, "sentinel", {});
+        return "sentinel" in object;
+    } catch (exception) {
+        // returns falsy
+    }
+}
+
+// check whether defineProperty works if it's given. Otherwise,
+// shim partially.
+if (Object.defineProperty) {
+    var definePropertyWorksOnObject = doesDefinePropertyWork({});
+    var definePropertyWorksOnDom = typeof document === "undefined" ||
+        doesDefinePropertyWork(document.createElement("div"));
+    if (!definePropertyWorksOnObject || !definePropertyWorksOnDom) {
+        var definePropertyFallback = Object.defineProperty,
+            definePropertiesFallback = Object.defineProperties;
+    }
+}
+
+if (!Object.defineProperty || definePropertyFallback) {
+    var ERR_NON_OBJECT_DESCRIPTOR = "Property description must be an object: ";
+    var ERR_NON_OBJECT_TARGET = "Object.defineProperty called on non-object: "
+    var ERR_ACCESSORS_NOT_SUPPORTED = "getters & setters can not be defined " +
+                                      "on this javascript engine";
+
+    Object.defineProperty = function defineProperty(object, property, descriptor) {
+        if ((typeof object !== "object" && typeof object !== "function") || object === null) {
+            throw new TypeError(ERR_NON_OBJECT_TARGET + object);
+        }
+        if ((typeof descriptor !== "object" && typeof descriptor !== "function") || descriptor === null) {
+            throw new TypeError(ERR_NON_OBJECT_DESCRIPTOR + descriptor);
+        }
+        // make a valiant attempt to use the real defineProperty
+        // for I8's DOM elements.
+        if (definePropertyFallback) {
+            try {
+                return definePropertyFallback.call(Object, object, property, descriptor);
+            } catch (exception) {
+                // try the shim if the real one doesn't work
+            }
+        }
+
+        // If it's a data property.
+        if (owns(descriptor, "value")) {
+            // fail silently if "writable", "enumerable", or "configurable"
+            // are requested but not supported
+            /*
+            // alternate approach:
+            if ( // can't implement these features; allow false but not true
+                !(owns(descriptor, "writable") ? descriptor.writable : true) ||
+                !(owns(descriptor, "enumerable") ? descriptor.enumerable : true) ||
+                !(owns(descriptor, "configurable") ? descriptor.configurable : true)
+            )
+                throw new RangeError(
+                    "This implementation of Object.defineProperty does not " +
+                    "support configurable, enumerable, or writable."
+                );
+            */
+
+            if (supportsAccessors && (lookupGetter(object, property) ||
+                                      lookupSetter(object, property)))
+            {
+                // As accessors are supported only on engines implementing
+                // `__proto__` we can safely override `__proto__` while defining
+                // a property to make sure that we don't hit an inherited
+                // accessor.
+                var prototype = object.__proto__;
+                object.__proto__ = prototypeOfObject;
+                // Deleting a property anyway since getter / setter may be
+                // defined on object itself.
+                delete object[property];
+                object[property] = descriptor.value;
+                // Setting original `__proto__` back now.
+                object.__proto__ = prototype;
+            } else {
+                object[property] = descriptor.value;
+            }
+        } else {
+            if (!supportsAccessors) {
+                throw new TypeError(ERR_ACCESSORS_NOT_SUPPORTED);
+            }
+            // If we got that far then getters and setters can be defined !!
+            if (owns(descriptor, "get")) {
+                defineGetter(object, property, descriptor.get);
+            }
+            if (owns(descriptor, "set")) {
+                defineSetter(object, property, descriptor.set);
+            }
+        }
+        return object;
+    };
+}
+
+// ES5 15.2.3.7
+// http://es5.github.com/#x15.2.3.7
+if (!Object.defineProperties || definePropertiesFallback) {
+    Object.defineProperties = function defineProperties(object, properties) {
+        // make a valiant attempt to use the real defineProperties
+        if (definePropertiesFallback) {
+            try {
+                return definePropertiesFallback.call(Object, object, properties);
+            } catch (exception) {
+                // try the shim if the real one doesn't work
+            }
+        }
+
+        for (var property in properties) {
+            if (owns(properties, property) && property !== "__proto__") {
+                Object.defineProperty(object, property, properties[property]);
+            }
+        }
+        return object;
+    };
+}
+
+// ES5 15.2.3.8
+// http://es5.github.com/#x15.2.3.8
+if (!Object.seal) {
+    Object.seal = function seal(object) {
+        // this is misleading and breaks feature-detection, but
+        // allows "securable" code to "gracefully" degrade to working
+        // but insecure code.
+        return object;
+    };
+}
+
+// ES5 15.2.3.9
+// http://es5.github.com/#x15.2.3.9
+if (!Object.freeze) {
+    Object.freeze = function freeze(object) {
+        // this is misleading and breaks feature-detection, but
+        // allows "securable" code to "gracefully" degrade to working
+        // but insecure code.
+        return object;
+    };
+}
+
+// detect a Rhino bug and patch it
+try {
+    Object.freeze(function () {});
+} catch (exception) {
+    Object.freeze = (function freeze(freezeObject) {
+        return function freeze(object) {
+            if (typeof object === "function") {
+                return object;
+            } else {
+                return freezeObject(object);
+            }
+        };
+    })(Object.freeze);
+}
+
+// ES5 15.2.3.10
+// http://es5.github.com/#x15.2.3.10
+if (!Object.preventExtensions) {
+    Object.preventExtensions = function preventExtensions(object) {
+        // this is misleading and breaks feature-detection, but
+        // allows "securable" code to "gracefully" degrade to working
+        // but insecure code.
+        return object;
+    };
+}
+
+// ES5 15.2.3.11
+// http://es5.github.com/#x15.2.3.11
+if (!Object.isSealed) {
+    Object.isSealed = function isSealed(object) {
+        return false;
+    };
+}
+
+// ES5 15.2.3.12
+// http://es5.github.com/#x15.2.3.12
+if (!Object.isFrozen) {
+    Object.isFrozen = function isFrozen(object) {
+        return false;
+    };
+}
+
+// ES5 15.2.3.13
+// http://es5.github.com/#x15.2.3.13
+if (!Object.isExtensible) {
+    Object.isExtensible = function isExtensible(object) {
+        // 1. If Type(O) is not Object throw a TypeError exception.
+        if (Object(object) !== object) {
+            throw new TypeError(); // TODO message
+        }
+        // 2. Return the Boolean value of the [[Extensible]] internal property of O.
+        var name = '';
+        while (owns(object, name)) {
+            name += '?';
+        }
+        object[name] = true;
+        var returnValue = owns(object, name);
+        delete object[name];
+        return returnValue;
+    };
+}
+
+}));
+
+
+  var nav = navigator.appName,
+      version = navigator.appVersion,
+      ie = (nav == 'Microsoft Internet Explorer');
+  if (ie) {
+    var match = navigator.userAgent.match(/MSIE ([0-9]{1,}[\.0-9]{0,})/);
+    version = match ? parseFloat(match[1]) : 0;
+  }
+
+  var aight = {
+    version: "2.0.0a",
+    browser: {
+      name: nav,
+      ie:   ie ? version : false,
+      ie9:  ie && (version >= 9 && version <= 10),
+      ie8:  ie && (version >= 8 && version <= 9),
+      ie7:  ie && (version >= 7 && version <= 8),
+      ie6:  ie && (version >= 6 && version <= 7)
+    }
+  };
+
+  // exporting to globals doesn't work from within browserify
+  window.aight = aight;
+
+  // copy keys to the exports for browserify
+  Object.keys(aight).forEach(function(k) {
+    exports[k] = aight[k];
+  });
+
+
+  function aliasInterface(ns, expectedName, nonStandardName) {
+    if (ns[nonStandardName] && !ns[expectedName]) {
+      ns[expectedName] = ns[nonStandardName];
+      return true;
+    }
+    return false;
+  }
+
+  function shimPropertyAccessor(klass, property, shim) {
+    if (klass && !(property in klass.prototype)) {
+      return shim(klass.prototype, property);
+    }
+  }
+
+  aliasInterface(window, "HTMLCommentElement", "Comment");
+  aliasInterface(window, "HTMLDocument", "Document");
+if (aight.browser.ie < 9) {
+
+  /*! (C) WebReflection Mit Style License */
+  if (document.createEvent) return;
+  var
+    DUNNOABOUTDOMLOADED = true,
+    READYEVENTDISPATCHED = false,
+    ONREADYSTATECHANGE = 'onreadystatechange',
+    DOMCONTENTLOADED = 'DOMContentLoaded',
+    SECRET = '__IE8__' + Math.random(),
+    // Object = window.Object,
+    defineProperty = Object.defineProperty ||
+    // just in case ...
+    function (object, property, descriptor) {
+      object[property] = descriptor.value;
+    },
+    defineProperties = Object.defineProperties ||
+    // IE8 implemented defineProperty but not the plural...
+    function (object, descriptors) {
+      for(var key in descriptors) {
+        if (hasOwnProperty.call(descriptors, key)) {
+          try {
+            defineProperty(object, key, descriptors[key]);
+          } catch(o_O) {
+            if (window.console) {
+              console.log(key + ' failed on object:', object, o_O.message);
+            }
+          }
+        }
+      }
+    },
+    getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor,
+    hasOwnProperty = Object.prototype.hasOwnProperty,
+    // here IE7 will break like a charm
+    ElementPrototype = window.Element.prototype,
+    TextPrototype = window.Text.prototype,
+    // none of above native constructors exist/are exposed
+    possiblyNativeEvent = /^[a-z]+$/,
+    // ^ actually could probably be just /^[a-z]+$/
+    readyStateOK = /loaded|complete/,
+    types = {},
+    div = document.createElement('div')
+  ;
+
+  function commonEventLoop(currentTarget, e, $handlers, synthetic) {
+    for(var
+      continuePropagation,
+      handlers = $handlers.slice(),
+      evt = enrich(e, currentTarget),
+      i = 0, length = handlers.length; i < length; i++
+    ) {
+      handler = handlers[i];
+      if (
+        typeof handler === 'object' &&
+        typeof handler.handleEvent === 'function'
+      ) {
+        handler.handleEvent(evt);
+      } else {
+        handler.call(currentTarget, evt);
+      }
+      if (evt.stoppedImmediatePropagation) break;
+    }
+    continuePropagation = !evt.stoppedPropagation;
+    /*
+    if (continuePropagation && !synthetic && !live(currentTarget)) {
+      evt.cancelBubble = true;
+    }
+    */
+    return (
+      synthetic &&
+      continuePropagation &&
+      currentTarget.parentNode
+    ) ?
+      currentTarget.parentNode.dispatchEvent(evt) :
+      !evt.defaultPrevented
+    ;
+  }
+
+  function commonDescriptor(get, set) {
+    return {
+      // if you try with enumerable: true
+      // IE8 will miserably fail
+      configurable: true,
+      get: get,
+      set: set
+    };
+  }
+
+  function commonTextContent(protoDest, protoSource, property) {
+    var descriptor = getOwnPropertyDescriptor(
+      protoSource || protoDest, property
+    );
+    defineProperty(
+      protoDest,
+      'textContent',
+      commonDescriptor(
+        function () {
+          return descriptor.get.call(this);
+        },
+        function (textContent) {
+          descriptor.set.call(this, textContent);
+        }
+      )
+    );
+  }
+
+  function enrich(e, currentTarget) {
+    e.currentTarget = currentTarget;
+    e.eventPhase = (
+      // AT_TARGET : BUBBLING_PHASE
+      e.target === e.currentTarget ? 2 : 3
+    );
+    return e;
+  }
+
+  function find(array, value) {
+    var i = array.length;
+    while(i-- && array[i] !== value);
+    return i;
+  }
+
+  function getTextContent() {
+    if (this.tagName === 'BR') return '\n';
+    var
+      textNode = this.firstChild,
+      arrayContent = []
+    ;
+    while(textNode) {
+      if (textNode.nodeType !== 8 && textNode.nodeType !== 7) {
+        arrayContent.push(textNode.textContent);
+      }
+      textNode = textNode.nextSibling;
+    }
+    return arrayContent.join('');
+  }
+
+  function live(self) {
+    return self.nodeType !== 9 && document.documentElement.contains(self);
+  }
+
+  function onReadyState(e) {
+    if (!READYEVENTDISPATCHED && readyStateOK.test(
+      document.readyState
+    )) {
+      READYEVENTDISPATCHED = !READYEVENTDISPATCHED;
+      document.detachEvent(ONREADYSTATECHANGE, onReadyState);
+      e = document.createEvent('Event');
+      e.initEvent(DOMCONTENTLOADED, true, true);
+      document.dispatchEvent(e);
+    }
+  }
+
+  function setTextContent(textContent) {
+    var node;
+    while ((node = this.lastChild)) {
+      this.removeChild(node);
+    }
+    if (textContent != null) {
+      this.appendChild(document.createTextNode(textContent));
+    }
+  }
+
+  function verify(self, e) {
+    if (!e) {
+      e = window.event;
+    }
+    if (!e.target) {
+      e.target = e.srcElement || e.fromElement || document;
+    }
+    if (!e.timeStamp) {
+      e.timeStamp = (new Date).getTime();
+    }
+    return e;
+  }
+
+  // normalized textContent for:
+  //  comment, script, style, text, title
+  commonTextContent(
+    window.HTMLCommentElement.prototype,
+    ElementPrototype,
+    'nodeValue'
+  );
+
+  commonTextContent(
+    window.HTMLScriptElement.prototype,
+    null,
+    'text'
+  );
+
+  commonTextContent(
+    TextPrototype,
+    null,
+    'nodeValue'
+  );
+
+  commonTextContent(
+    window.HTMLTitleElement.prototype,
+    null,
+    'text'
+  );
+
+  defineProperty(
+    window.HTMLStyleElement.prototype,
+    'textContent',
+    (function(descriptor){
+      return commonDescriptor(
+        function () {
+          return descriptor.get.call(this.styleSheet);
+        },
+        function (textContent) {
+          descriptor.set.call(this.styleSheet, textContent);
+        }
+      );
+    }(getOwnPropertyDescriptor(window.CSSStyleSheet.prototype, 'cssText')))
+  );
+
+  defineProperties(
+    ElementPrototype,
+    {
+      // bonus
+      textContent: {
+        get: getTextContent,
+        set: setTextContent
+      },
+      // http://www.w3.org/TR/ElementTraversal/#interface-elementTraversal
+      firstElementChild: {
+        get: function () {
+          for(var
+            childNodes = this.childNodes || [],
+            i = 0, length = childNodes.length;
+            i < length; i++
+          ) {
+            if (childNodes[i].nodeType == 1) return childNodes[i];
+          }
+        }
+      },
+      lastElementChild: {
+        get: function () {
+          for(var
+            childNodes = this.childNodes || [],
+            i = childNodes.length;
+            i--;
+          ) {
+            if (childNodes[i].nodeType == 1) return childNodes[i];
+          }
+        }
+      },
+      previousElementSibling: {
+        get: function () {
+          var previousElementSibling = this.previousSibling;
+          while (previousElementSibling && previousElementSibling.nodeType != 1) {
+            previousElementSibling = previousElementSibling.previousSibling;
+          }
+          return previousElementSibling;
+        }
+      },
+      nextElementSibling: {
+        get: function () {
+          var nextElementSibling = this.nextSibling;
+          while (nextElementSibling && nextElementSibling.nodeType != 1) {
+            nextElementSibling = nextElementSibling.nextSibling;
+          }
+          return nextElementSibling;
+        }
+      },
+      childElementCount: {
+        get: function () {
+          for(var
+            count = 0,
+            childNodes = this.childNodes || [],
+            i = childNodes.length; i--; count += childNodes[i].nodeType == 1
+          );
+          return count;
+        }
+      },
+      /*
+      // children would be an override
+      // IE8 already supports them but with comments too
+      // not just nodeType 1
+      children: {
+        get: function () {
+          for(var
+            children = [],
+            childNodes = this.childNodes || [],
+            i = 0, length = childNodes.length;
+            i < length; i++
+          ) {
+            if (childNodes[i].nodeType == 1) {
+              children.push(childNodes[i]);
+            }
+          }
+          return children;
+        }
+      },
+      */
+      // DOM Level 2 EventTarget methods and events
+      addEventListener: {value: function (type, handler, capture) {
+        var
+          self = this,
+          ontype = 'on' + type,
+          temple =  self[SECRET] ||
+                      defineProperty(
+                        self, SECRET, {value: {}}
+                      )[SECRET],
+          currentType = temple[ontype] || (temple[ontype] = {}),
+          handlers  = currentType.h || (currentType.h = []),
+          e
+        ;
+        if (!hasOwnProperty.call(currentType, 'w')) {
+          currentType.w = function (e) {
+            // e[SECRET] is a silent notification needed to avoid
+            // fired events during live test
+            return e[SECRET] || commonEventLoop(self, verify(self, e), handlers, false);
+          };
+          // if not detected yet
+          if (!hasOwnProperty.call(types, ontype)) {
+            // and potentially a native event
+            if(possiblyNativeEvent.test(type)) {
+              // do this heavy thing
+              try {
+                // TODO:  should I consider tagName too so that
+                //        INPUT[ontype] could be different ?
+                e = document.createEventObject();
+                // do not clone ever a node
+                // specially a document one ...
+                // use the secret to ignore them all
+                e[SECRET] = true;
+                // document a part if a node has never been
+                // added to any other node, fireEvent might
+                // behave very weirdly (read: trigger unspecified errors)
+                if (self.nodeType != 9 && self.parentNode == null) {
+                  div.appendChild(self);
+                }
+                self.fireEvent(ontype, e);
+                types[ontype] = true;
+              } catch(e) {
+                types[ontype] = false;
+                while (div.hasChildNodes()) {
+                  div.removeChild(div.firstChild);
+                }
+              }
+            } else {
+              // no need to bother since
+              // 'x-event' ain't native for sure
+              types[ontype] = false;
+            }
+          }
+          if (currentType.n = types[ontype]) {
+            self.attachEvent(ontype, currentType.w);
+          }
+        }
+        if (find(handlers, handler) < 0) {
+          handlers[capture ? 'unshift' : 'push'](handler);
+        }
+      }},
+      dispatchEvent: {value: function (e) {
+        var
+          self = this,
+          ontype = 'on' + e.type,
+          temple =  self[SECRET],
+          currentType = temple && temple[ontype],
+          valid = !!currentType,
+          parentNode
+        ;
+        if (!e.target) e.target = self;
+        return (valid ? (
+          currentType.n /* && live(self) */ ?
+            self.fireEvent(ontype, e) :
+            commonEventLoop(
+              self,
+              e,
+              currentType.h,
+              true
+            )
+        ) : (
+          (parentNode = self.parentNode) /* && live(self) */ ?
+            parentNode.dispatchEvent(e) :
+            true
+        )), !e.defaultPrevented;
+      }},
+      removeEventListener: {value: function (type, handler, capture) {
+        var
+          self = this,
+          ontype = 'on' + type,
+          temple =  self[SECRET],
+          currentType = temple && temple[ontype],
+          handlers = currentType && currentType.h,
+          i = handlers ? find(handlers, handler) : -1
+        ;
+        if (-1 < i) handlers.splice(i, 1);
+      }}
+    }
+  );
+
+  // EventTarget methods for Text nodes too
+  defineProperties(TextPrototype, {
+    addEventListener: {value: ElementPrototype.addEventListener},
+    dispatchEvent: {value: ElementPrototype.dispatchEvent},
+    removeEventListener: {value: ElementPrototype.removeEventListener}
+  });
+
+  defineProperties(
+    window.XMLHttpRequest.prototype,
+    {
+      addEventListener: {value: function (type, handler, capture) {
+        var
+          self = this,
+          ontype = 'on' + type,
+          temple =  self[SECRET] ||
+                      defineProperty(
+                        self, SECRET, {value: {}}
+                      )[SECRET],
+          currentType = temple[ontype] || (temple[ontype] = {}),
+          handlers  = currentType.h || (currentType.h = [])
+        ;
+        if (find(handlers, handler) < 0) {
+          if (!self[ontype]) {
+            self[ontype] = function () {
+              var e = document.createEvent('Event');
+              e.initEvent(type, true, true);
+              self.dispatchEvent(e);
+            };
+          }
+          handlers[capture ? 'unshift' : 'push'](handler);
+        }
+      }},
+      dispatchEvent: {value: function (e) {
+        var
+          self = this,
+          ontype = 'on' + e.type,
+          temple =  self[SECRET],
+          currentType = temple && temple[ontype],
+          valid = !!currentType
+        ;
+        return valid && (
+          currentType.n /* && live(self) */ ?
+            self.fireEvent(ontype, e) :
+            commonEventLoop(
+              self,
+              e,
+              currentType.h,
+              true
+            )
+        );
+      }},
+      removeEventListener: {value: ElementPrototype.removeEventListener}
+    }
+  );
+
+  defineProperties(
+    window.Event.prototype,
+    {
+      bubbles: {value: true, writable: true},
+      cancelable: {value: true, writable: true},
+      preventDefault: {value: function () {
+        if (this.cancelable) {
+          this.defaultPrevented = true;
+          this.returnValue = false;
+        }
+      }},
+      stopPropagation: {value: function () {
+        this.stoppedPropagation = true;
+        this.cancelBubble = true;
+      }},
+      stopImmediatePropagation: {value: function () {
+        this.stoppedImmediatePropagation = true;
+        this.stopPropagation();
+      }},
+      initEvent: {value: function(type, bubbles, cancelable){
+        this.type = type;
+        this.bubbles = !!bubbles;
+        this.cancelable = !!cancelable;
+        if (!this.bubbles) {
+          this.stopPropagation();
+        }
+      }}
+    }
+  );
+
+  defineProperties(
+    window.HTMLDocument.prototype,
+    {
+      textContent: {
+        get: function () {
+          return this.nodeType === 11 ? getTextContent.call(this) : null;
+        },
+        set: function (textContent) {
+          if (this.nodeType === 11) {
+            setTextContent.call(this, textContent);
+          }
+        }
+      },
+      addEventListener: {value: function(type, handler, capture) {
+        var self = this;
+        ElementPrototype.addEventListener.call(self, type, handler, capture);
+        // NOTE:  it won't fire if already loaded, this is NOT a $.ready() shim!
+        //        this behaves just like standard browsers
+        if (
+          DUNNOABOUTDOMLOADED &&
+          type === DOMCONTENTLOADED &&
+          !readyStateOK.test(
+            self.readyState
+          )
+        ) {
+          DUNNOABOUTDOMLOADED = false;
+          self.attachEvent(ONREADYSTATECHANGE, onReadyState);
+          if (window == top) {
+            (function gonna(e){try{
+              self.documentElement.doScroll('left');
+              onReadyState();
+              }catch(o_O){
+              setTimeout(gonna, 50);
+            }}());
+          }
+        }
+      }},
+      dispatchEvent: {value: ElementPrototype.dispatchEvent},
+      removeEventListener: {value: ElementPrototype.removeEventListener},
+      createEvent: {value: function(Class){
+        var e;
+        if (Class !== 'Event') throw new Error('unsupported ' + Class);
+        e = document.createEventObject();
+        e.timeStamp = (new Date).getTime();
+        return e;
+      }}
+    }
+  );
+
+  defineProperties(
+    window.Window.prototype,
+    {
+      getComputedStyle: {value: function(){
+
+        var // partially grabbed from jQuery and Dean's hack
+          notpixel = /^(?:[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|))(?!px)[a-z%]+$/,
+          position = /^(top|right|bottom|left)$/,
+          re = /\-([a-z])/g,
+          place = function (match, $1) {
+            return $1.toUpperCase();
+          }
+        ;
+
+        function ComputedStyle(_) {
+          this._ = _;
+        }
+
+        ComputedStyle.prototype.getPropertyValue = function (name) {
+          var
+            el = this._,
+            style = el.style,
+            currentStyle = el.currentStyle,
+            runtimeStyle = el.runtimeStyle,
+            result,
+            left,
+            rtLeft
+          ;
+          name = (name === 'float' ? 'style-float' : name).replace(re, place);
+          result = currentStyle ? currentStyle[name] : style[name];
+          if (notpixel.test(result) && !position.test(name)) {
+            left = style.left;
+            rtLeft = runtimeStyle && runtimeStyle.left;
+            if (rtLeft) {
+              runtimeStyle.left = currentStyle.left;
+            }
+            style.left = name === 'fontSize' ? '1em' : result;
+            result = style.pixelLeft + 'px';
+            style.left = left;
+            if (rtLeft) {
+              runtimeStyle.left = rtLeft;
+            }
+          }
+          return result == null ?
+            result : ((result + '') || 'auto');
+        };
+
+        // unsupported
+        function PseudoComputedStyle() {}
+        PseudoComputedStyle.prototype.getPropertyValue = function () {
+          return null;
+        };
+
+        return function (el, pseudo) {
+          return pseudo ?
+            new PseudoComputedStyle(el) :
+            new ComputedStyle(el);
+        };
+
+      }()},
+
+      addEventListener: {value: function (type, handler, capture) {
+        var
+          self = window,
+          ontype = 'on' + type,
+          handlers
+        ;
+        if (!self[ontype]) {
+          self[ontype] = function(e) {
+            return commonEventLoop(self, verify(self, e), handlers, false);
+          };
+        }
+        handlers = self[ontype][SECRET] || (
+          self[ontype][SECRET] = []
+        );
+        if (find(handlers, handler) < 0) {
+          handlers[capture ? 'unshift' : 'push'](handler);
+        }
+      }},
+      dispatchEvent: {value: function (e) {
+        var method = window['on' + e.type];
+        return method ? method.call(window, e) !== false && !e.defaultPrevented : true;
+      }},
+      removeEventListener: {value: function (type, handler, capture) {
+        var
+          ontype = 'on' + type,
+          handlers = (window[ontype] || Object)[SECRET],
+          i = handlers ? find(handlers, handler) : -1
+         ;
+        if (-1 < i) handlers.splice(i, 1);
+      }}
+    }
+  );
+} // if (aight.browser.ie < 9)
+(function(window){'use strict';
+  /* jshint loopfunc: true, noempty: false*/
+  // http://www.w3.org/TR/dom/#element
+  function textNodeIfString(node) {
+    return typeof node === 'string' ? window.document.createTextNode(node) : node;
+  }
+  function mutationMacro(nodes) {
+    if (nodes.length === 1) {
+      return textNodeIfString(nodes[0]);
+    }
+    for (var
+      fragment = window.document.createDocumentFragment(),
+      list = slice.call(nodes),
+      i = 0; i < nodes.length; i++
+    ) {
+      fragment.appendChild(textNodeIfString(list[i]));
+    }
+    return fragment;
+  }
+  for(var
+    defineProperty = Object.defineProperty || function (object, property, descriptor) {
+      object.__defineGetter__(property, descriptor.get);
+    },
+    indexOf = [].indexOf || function indexOf(value){
+      var length = this.length;
+      while(length--) {
+        if (this[length] === value) {
+          break;
+        }
+      }
+      return length;
+    },
+    head,
+    property,
+    verifyToken,
+    DOMTokenList,
+    trim = /^\s+|\s+$/g,
+    spaces = /\s+/,
+    SPACE = '\x20',
+    toggle = function toggle(token, force) {
+      if (this.contains(token)) {
+        if (!force) {
+          // force is not true (either false or omitted)
+          this.remove(token);
+        }
+      } else if(force === undefined || force) {
+        force = true;
+        this.add(token);
+      }
+      return !!force;
+    },
+    ElementPrototype = (window.Element || window.Node || window.HTMLElement).prototype,
+    properties = [
+      'matches', (
+        ElementPrototype.matchesSelector ||
+        ElementPrototype.webkitMatchesSelector ||
+        ElementPrototype.khtmlMatchesSelector ||
+        ElementPrototype.mozMatchesSelector ||
+        ElementPrototype.msMatchesSelector ||
+        ElementPrototype.oMatchesSelector ||
+        function matches(selector) {
+          var parentNode = this.parentNode;
+          return !!parentNode && -1 < indexOf.call(
+            parentNode.querySelectorAll(selector),
+            this
+          );
+        }
+      ),
+      'closest', function closest(selector) {
+        var parentNode = this, matches;
+        while (
+          // document has no .matches
+          (matches = parentNode && parentNode.matches) &&
+          !parentNode.matches(selector)
+        ) {
+          parentNode = parentNode.parentNode;
+        }
+        return matches ? parentNode : null;
+      },
+      'prepend', function prepend() {
+        var firstChild = this.firstChild,
+            node = mutationMacro(arguments);
+        if (firstChild) {
+          this.insertBefore(node, firstChild);
+        } else {
+          this.appendChild(node);
+        }
+      },
+      'append', function append() {
+        this.appendChild(mutationMacro(arguments));
+      },
+      'before', function before() {
+        var parentNode = this.parentNode;
+        if (parentNode) {
+          parentNode.insertBefore(
+            mutationMacro(arguments), this
+          );
+        }
+      },
+      'after', function after() {
+        var parentNode = this.parentNode,
+            nextSibling = this.nextSibling,
+            node = mutationMacro(arguments);
+        if (parentNode) {
+          if (nextSibling) {
+            parentNode.insertBefore(node, nextSibling);
+          } else {
+            parentNode.appendChild(node);
+          }
+        }
+      },
+      // WARNING - DEPRECATED - use .replaceWith() instead
+      'replace', function replace() {
+        var parentNode = this.parentNode;
+        if (parentNode) {
+          parentNode.replaceChild(
+            mutationMacro(arguments),
+            this
+          );
+        }
+      },
+      'replaceWith', function replaceWith() {
+        var parentNode = this.parentNode,
+            comment;
+        if (parentNode) {
+          // if a node is replaced with a list of nodes
+          // that includes the node itself
+          // we need to be able to remove it from its current position
+          // and replace its position with the new list
+          // a comment would play nice here thanks to its ability
+          // to be, CSS and repaint speaking, ignored
+          comment = window.document.createComment('');
+          parentNode.insertBefore(comment, this);
+          parentNode.removeChild(this);
+          parentNode.replaceChild(mutationMacro(arguments), comment);
+        }
+      },
+      'remove', function remove() {
+        var parentNode = this.parentNode;
+        if (parentNode) {
+          parentNode.removeChild(this);
+        }
+      }
+    ],
+    slice = properties.slice,
+    i = properties.length; i; i -= 2
+  ) {
+    property = properties[i - 2];
+    if (!(property in ElementPrototype)) {
+      ElementPrototype[property] = properties[i - 1];
+    }
+  }
+  // most likely an IE9 only issue
+  // see https://github.com/WebReflection/dom4/issues/6
+  if (!document.createElement('a').matches('a')) {
+    ElementPrototype[property] = function(matches){
+      return function (selector) {
+        return matches.call(
+          this.parentNode ?
+            this :
+            document.createDocumentFragment().appendChild(this),
+          selector
+        );
+      };
+    }(ElementPrototype[property]);
+  }
+  // http://www.w3.org/TR/dom/#domtokenlist
+  // iOS 5.1 has completely screwed this property
+  // classList in ElementPrototype is false
+  // but it's actually there as getter
+  if (!('classList' in document.documentElement)) {
+    // http://www.w3.org/TR/domcore/#domtokenlist
+    verifyToken = function (token) {
+      if (!token) {
+        throw 'SyntaxError';
+      } else if (spaces.test(token)) {
+        throw 'InvalidCharacterError';
+      }
+      return token;
+    };
+    DOMTokenList = function (node) {
+      var className = node.className.replace(trim, '');
+      if (className.length) {
+        properties.push.apply(
+          this,
+          className.split(spaces)
+        );
+      }
+      this._ = node;
+    };
+    DOMTokenList.prototype = {
+      length: 0,
+      add: function add() {
+        for(var j = 0, token; j < arguments.length; j++) {
+          token = arguments[j];
+          if(!this.contains(token)) {
+            properties.push.call(this, property);
+          }
+        }
+        this._.className = '' + this;
+      },
+      contains: (function(indexOf){
+        return function contains(token) {
+          i = indexOf.call(this, property = verifyToken(token));
+          return -1 < i;
+        };
+      }([].indexOf || function (token) {
+        i = this.length;
+        while(i-- && this[i] !== token){}
+        return i;
+      })),
+      item: function item(i) {
+        return this[i] || null;
+      },
+      remove: function remove() {
+        for(var j = 0, token; j < arguments.length; j++) {
+          token = arguments[j];
+          if(this.contains(token)) {
+            properties.splice.call(this, i, 1);
+          }
+        }
+        this._.className = '' + this;
+      },
+      toggle: toggle,
+      toString: function toString() {
+        return properties.join.call(this, SPACE);
+      }
+    };
+    defineProperty(ElementPrototype, 'classList', {
+      get: function get() {
+        return new DOMTokenList(this);
+      },
+      set: function(){}
+    });
+  } else {
+    // iOS 5.1 and Nokia ASHA do not support multiple add or remove
+    // trying to detect and fix that in here
+    DOMTokenList = document.createElement('div').classList;
+    DOMTokenList.add('a', 'b', 'a');
+    if ('a\x20b' != DOMTokenList) {
+      // no other way to reach original methods in iOS 5.1
+      ElementPrototype = DOMTokenList.constructor.prototype;
+      if (!('add' in ElementPrototype)) {
+        // ASHA double fails in here
+        ElementPrototype = window.DOMTokenList.prototype;
+      }
+      verifyToken = function (original) {
+        return function () {
+          var i = 0;
+          while (i < arguments.length) {
+            original.call(this, arguments[i++]);
+          }
+        };
+      };
+      ElementPrototype.add = verifyToken(ElementPrototype.add);
+      ElementPrototype.remove = verifyToken(ElementPrototype.remove);
+      // toggle is broken too ^_^ ... let's fix it
+      ElementPrototype.toggle = toggle;
+    }
+  }
+
+  if (!('head' in document)) {
+    defineProperty(document, 'head', {
+      get: function () {
+        return head || (
+          head = document.getElementsByTagName('head')[0]
+        );
+      }
+    });
+  }
+
+  // http://www.w3.org/TR/dom/#customevent
+  try{new window.CustomEvent('?');}catch(o_O){
+    window.CustomEvent = function(
+      eventName,
+      defaultInitDict
+    ){
+
+      // the infamous substitute
+      function CustomEvent(type, eventInitDict) {
+        /*jshint eqnull:true */
+        var event = document.createEvent(eventName);
+        if (typeof type != 'string') {
+          throw new Error('An event name must be provided');
+        }
+        if (eventName == 'Event') {
+          event.initCustomEvent = initCustomEvent;
+        }
+        if (eventInitDict == null) {
+          eventInitDict = defaultInitDict;
+        }
+        event.initCustomEvent(
+          type,
+          eventInitDict.bubbles,
+          eventInitDict.cancelable,
+          eventInitDict.detail
+        );
+        return event;
+      }
+
+      // attached at runtime
+      function initCustomEvent(
+        type, bubbles, cancelable, detail
+      ) {
+        /*jshint validthis:true*/
+        this.initEvent(type, bubbles, cancelable);
+        this.detail = detail;
+      }
+
+      // that's it
+      return CustomEvent;
+    }(
+      // is this IE9 or IE10 ?
+      // where CustomEvent is there
+      // but not usable as construtor ?
+      window.CustomEvent ?
+        // use the CustomEvent interface in such case
+        'CustomEvent' : 'Event',
+        // otherwise the common compatible one
+      {
+        bubbles: false,
+        cancelable: false,
+        detail: null
+      }
+    );
+  }
+
+}(window));/**
+* @preserve HTML5 Shiv 3.7.2 | @afarkas @jdalton @jon_neal @rem | MIT/GPL2 Licensed
+*/
+;(function(window, document) {
+/*jshint evil:true */
+  /** version */
+  var version = '3.7.2';
+
+  /** Preset options */
+  var options = window.html5 || {};
+
+  /** Used to skip problem elements */
+  var reSkip = /^<|^(?:button|map|select|textarea|object|iframe|option|optgroup)$/i;
+
+  /** Not all elements can be cloned in IE **/
+  var saveClones = /^(?:a|b|code|div|fieldset|h1|h2|h3|h4|h5|h6|i|label|li|ol|p|q|span|strong|style|table|tbody|td|th|tr|ul)$/i;
+
+  /** Detect whether the browser supports default html5 styles */
+  var supportsHtml5Styles;
+
+  /** Name of the expando, to work with multiple documents or to re-shiv one document */
+  var expando = '_html5shiv';
+
+  /** The id for the the documents expando */
+  var expanID = 0;
+
+  /** Cached data for each document */
+  var expandoData = {};
+
+  /** Detect whether the browser supports unknown elements */
+  var supportsUnknownElements;
+
+  (function() {
+    try {
+        var a = document.createElement('a');
+        a.innerHTML = '<xyz></xyz>';
+        //if the hidden property is implemented we can assume, that the browser supports basic HTML5 Styles
+        supportsHtml5Styles = ('hidden' in a);
+
+        supportsUnknownElements = a.childNodes.length == 1 || (function() {
+          // assign a false positive if unable to shiv
+          (document.createElement)('a');
+          var frag = document.createDocumentFragment();
+          return (
+            typeof frag.cloneNode == 'undefined' ||
+            typeof frag.createDocumentFragment == 'undefined' ||
+            typeof frag.createElement == 'undefined'
+          );
+        }());
+    } catch(e) {
+      // assign a false positive if detection fails => unable to shiv
+      supportsHtml5Styles = true;
+      supportsUnknownElements = true;
+    }
+
+  }());
+
+  /*--------------------------------------------------------------------------*/
+
+  /**
+   * Creates a style sheet with the given CSS text and adds it to the document.
+   * @private
+   * @param {Document} ownerDocument The document.
+   * @param {String} cssText The CSS text.
+   * @returns {StyleSheet} The style element.
+   */
+  function addStyleSheet(ownerDocument, cssText) {
+    var p = ownerDocument.createElement('p'),
+        parent = ownerDocument.getElementsByTagName('head')[0] || ownerDocument.documentElement;
+
+    p.innerHTML = 'x<style>' + cssText + '</style>';
+    return parent.insertBefore(p.lastChild, parent.firstChild);
+  }
+
+  /**
+   * Returns the value of `html5.elements` as an array.
+   * @private
+   * @returns {Array} An array of shived element node names.
+   */
+  function getElements() {
+    var elements = html5.elements;
+    return typeof elements == 'string' ? elements.split(' ') : elements;
+  }
+
+  /**
+   * Extends the built-in list of html5 elements
+   * @memberOf html5
+   * @param {String|Array} newElements whitespace separated list or array of new element names to shiv
+   * @param {Document} ownerDocument The context document.
+   */
+  function addElements(newElements, ownerDocument) {
+    var elements = html5.elements;
+    if(typeof elements != 'string'){
+      elements = elements.join(' ');
+    }
+    if(typeof newElements != 'string'){
+      newElements = newElements.join(' ');
+    }
+    html5.elements = elements +' '+ newElements;
+    shivDocument(ownerDocument);
+  }
+
+   /**
+   * Returns the data associated to the given document
+   * @private
+   * @param {Document} ownerDocument The document.
+   * @returns {Object} An object of data.
+   */
+  function getExpandoData(ownerDocument) {
+    var data = expandoData[ownerDocument[expando]];
+    if (!data) {
+        data = {};
+        expanID++;
+        ownerDocument[expando] = expanID;
+        expandoData[expanID] = data;
+    }
+    return data;
+  }
+
+  /**
+   * returns a shived element for the given nodeName and document
+   * @memberOf html5
+   * @param {String} nodeName name of the element
+   * @param {Document} ownerDocument The context document.
+   * @returns {Object} The shived element.
+   */
+  function createElement(nodeName, ownerDocument, data){
+    if (!ownerDocument) {
+        ownerDocument = document;
+    }
+    if(supportsUnknownElements){
+        return ownerDocument.createElement(nodeName);
+    }
+    if (!data) {
+        data = getExpandoData(ownerDocument);
+    }
+    var node;
+
+    if (data.cache[nodeName]) {
+        node = data.cache[nodeName].cloneNode();
+    } else if (saveClones.test(nodeName)) {
+        node = (data.cache[nodeName] = data.createElem(nodeName)).cloneNode();
+    } else {
+        node = data.createElem(nodeName);
+    }
+
+    // Avoid adding some elements to fragments in IE < 9 because
+    // * Attributes like `name` or `type` cannot be set/changed once an element
+    //   is inserted into a document/fragment
+    // * Link elements with `src` attributes that are inaccessible, as with
+    //   a 403 response, will cause the tab/window to crash
+    // * Script elements appended to fragments will execute when their `src`
+    //   or `text` property is set
+    return node.canHaveChildren && !reSkip.test(nodeName) && !node.tagUrn ? data.frag.appendChild(node) : node;
+  }
+
+  /**
+   * returns a shived DocumentFragment for the given document
+   * @memberOf html5
+   * @param {Document} ownerDocument The context document.
+   * @returns {Object} The shived DocumentFragment.
+   */
+  function createDocumentFragment(ownerDocument, data){
+    if (!ownerDocument) {
+        ownerDocument = document;
+    }
+    if(supportsUnknownElements){
+        return ownerDocument.createDocumentFragment();
+    }
+    data = data || getExpandoData(ownerDocument);
+    var clone = data.frag.cloneNode(),
+        i = 0,
+        elems = getElements(),
+        l = elems.length;
+    for(;i<l;i++){
+        clone.createElement(elems[i]);
+    }
+    return clone;
+  }
+
+  /**
+   * Shivs the `createElement` and `createDocumentFragment` methods of the document.
+   * @private
+   * @param {Document|DocumentFragment} ownerDocument The document.
+   * @param {Object} data of the document.
+   */
+  function shivMethods(ownerDocument, data) {
+    if (!data.cache) {
+        data.cache = {};
+        data.createElem = ownerDocument.createElement;
+        data.createFrag = ownerDocument.createDocumentFragment;
+        data.frag = data.createFrag();
+    }
+
+
+    ownerDocument.createElement = function(nodeName) {
+      //abort shiv
+      if (!html5.shivMethods) {
+          return data.createElem(nodeName);
+      }
+      return createElement(nodeName, ownerDocument, data);
+    };
+
+    ownerDocument.createDocumentFragment = Function('h,f', 'return function(){' +
+      'var n=f.cloneNode(),c=n.createElement;' +
+      'h.shivMethods&&(' +
+        // unroll the `createElement` calls
+        getElements().join().replace(/[\w\-:]+/g, function(nodeName) {
+          data.createElem(nodeName);
+          data.frag.createElement(nodeName);
+          return 'c("' + nodeName + '")';
+        }) +
+      ');return n}'
+    )(html5, data.frag);
+  }
+
+  /*--------------------------------------------------------------------------*/
+
+  /**
+   * Shivs the given document.
+   * @memberOf html5
+   * @param {Document} ownerDocument The document to shiv.
+   * @returns {Document} The shived document.
+   */
+  function shivDocument(ownerDocument) {
+    if (!ownerDocument) {
+        ownerDocument = document;
+    }
+    var data = getExpandoData(ownerDocument);
+
+    if (html5.shivCSS && !supportsHtml5Styles && !data.hasCSS) {
+      data.hasCSS = !!addStyleSheet(ownerDocument,
+        // corrects block display not defined in IE6/7/8/9
+        'article,aside,dialog,figcaption,figure,footer,header,hgroup,main,nav,section{display:block}' +
+        // adds styling not present in IE6/7/8/9
+        'mark{background:#FF0;color:#000}' +
+        // hides non-rendered elements
+        'template{display:none}'
+      );
+    }
+    if (!supportsUnknownElements) {
+      shivMethods(ownerDocument, data);
+    }
+    return ownerDocument;
+  }
+
+  /*--------------------------------------------------------------------------*/
+
+  /**
+   * The `html5` object is exposed so that more elements can be shived and
+   * existing shiving can be detected on iframes.
+   * @type Object
+   * @example
+   *
+   * // options can be changed before the script is included
+   * html5 = { 'elements': 'mark section', 'shivCSS': false, 'shivMethods': false };
+   */
+  var html5 = {
+
+    /**
+     * An array or space separated string of node names of the elements to shiv.
+     * @memberOf html5
+     * @type Array|String
+     */
+    'elements': options.elements || 'abbr article aside audio bdi canvas data datalist details dialog figcaption figure footer header hgroup main mark meter nav output picture progress section summary template time video',
+
+    /**
+     * current version of html5shiv
+     */
+    'version': version,
+
+    /**
+     * A flag to indicate that the HTML5 style sheet should be inserted.
+     * @memberOf html5
+     * @type Boolean
+     */
+    'shivCSS': (options.shivCSS !== false),
+
+    /**
+     * Is equal to true if a browser supports creating unknown/HTML5 elements
+     * @memberOf html5
+     * @type boolean
+     */
+    'supportsUnknownElements': supportsUnknownElements,
+
+    /**
+     * A flag to indicate that the document's `createElement` and `createDocumentFragment`
+     * methods should be overwritten.
+     * @memberOf html5
+     * @type Boolean
+     */
+    'shivMethods': (options.shivMethods !== false),
+
+    /**
+     * A string to describe the type of `html5` object ("default" or "default print").
+     * @memberOf html5
+     * @type String
+     */
+    'type': 'default',
+
+    // shivs the document according to the specified `html5` object options
+    'shivDocument': shivDocument,
+
+    //creates a shived element
+    createElement: createElement,
+
+    //creates a shived documentFragment
+    createDocumentFragment: createDocumentFragment,
+
+    //extends list of elements
+    addElements: addElements
+  };
+
+  /*--------------------------------------------------------------------------*/
+
+  // expose html5
+  window.html5 = html5;
+
+  // shiv the document
+  shivDocument(document);
+
+}(this, document));
+/* CSS Object Model patches */
+(function(CSSSDProto) {
+
+  // patch CSSStyleDeclaration.prototype using IE8's methods
+  if (typeof CSSSDProto.setAttribute !== "undefined") {
+    CSSSDProto.setProperty = function(property, value) {
+      return this.setAttribute(String(property), value /*, important */ );
+    };
+    CSSSDProto.getPropertyValue = function(property) {
+      return this.getAttribute(property);
+    };
+    CSSSDProto.removeProperty = function(property) {
+      return this.removeAttribute(property);
+    };
+  }
+
+})(CSSStyleDeclaration.prototype);
+if (!('createElementNS' in document)) {
+  var DocumentPrototype = window.HTMLDocument.prototype;
+  DocumentPrototype.createElementNS = function(ns, name) {
+    if (ns) throw new Error("sorry, this browser does not support namespaces");
+    return DocumentPrototype.createElement.call(this, name);
+  };
+}
+
+}).call(this, typeof module === "object" ? module.exports : this);

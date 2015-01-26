@@ -1,34 +1,41 @@
 # <img src="https://raw.github.com/shawnbot/aight/master/assets/aight.png">
 
-Aight is a collection of shims and polyfills that get IE8 up to speed with
-a bare minimum of HTML5 compatibility, providing all of the interfaces
-necessary to do HTML-only DOM manipulation with d3.js (and other libraries that
-rely on those interfaces). It includes:
+Aight is a collection of shims and polyfills that get IE8 (and IE9) up to speed
+with a bare minimum of HTML5 compatibility, providing all of the interfaces
+necessary to do HTML-only[*](#svg) DOM manipulation with [D3](http://d3js.org)
+and other libraries that rely on them. It includes:
 
 * [es5-shim](https://github.com/kriskowal/es5-shim), which implements all of
-  the Array prototype methods in the ES5 spec, and other goodies.
+  the Array prototype methods in the ES5 spec, and other goodies. Both the
+  [shims](https://github.com/es-shims/es5-shim#shims) and
+  [shams](https://github.com/es-shims/es5-shim#shams) are included.
 
-* [classList.js](https://github.com/eligrey/classList.js), which implements the
-  Element prototype's classList property, for intelligently adding and removing
-  classes from HTML elements.
+* The [ie8](https://github.com/WebReflection/ie8) and
+  [dom4](https://github.com/WebReflection/dom4) collections, courtesy of
+  [Andrea Giammarchi](https://github.com/WebReflection). My
+  [fork of ie8](https://github.com/shawnbot/ie8/tree/ie9) maintains
+  compatibility with IE9, and dom4 provides Event and DOM JavaScript interface
+  compatibility for *any* browser.
 
-* A shim for [CSSStyleDeclaration](http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSStyleDeclaration)'s
-  setProperty() and removeProperty() methods
+* A simple shim for
+  [CSSStyleDeclaration](http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSStyleDeclaration)'s
+  `setProperty()` and `removeProperty()` methods.
 
 * A shim for [document.createElementNS()](http://www.w3.org/TR/DOM-Level-2-Core/core.html#ID-DocCrElNS),
   which throws an error if you pass it an actual namespace (which IE8 doesn't
-  support). This merely provides a facade of interoperability with d3, which
+  support). This merely provides a facade of interoperability with D3, which
   calls createElementNS() even in cases where the parent's namespaceURI is
   undefined (as is the case in HTML5, but *not* XHTML).
 
-* A shim for [window.getComputedStyle()](http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSview-getComputedStyle)
-
-* A shim for the Element prototype's addEventListener() and
-  removeEventListener() methods, per the [DOM2 EventTarget](http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventTarget).
+* [html5shiv](https://github.com/aFarkas/html5shiv/), which monkeypatches IE6-8
+  to enable manipulation of HTML5 elements in the DOM and applies basic styling
+  for them in IE6-9. *If you need to be able to print these elements* you will
+  need to bring your own
+  [html5shiv-printshiv.js](https://github.com/aFarkas/html5shiv/#html5shiv-printshivjs).
 
 ## Usage
-Using aight is simple. First off, be sure that you're using the right `DOCTYPE`
-in your HTML:
+First off, ensure that you're using the [right
+DOCTYPE](http://ejohn.org/blog/html5-doctype/) in your HTML:
 
 ```html
 <!DOCTYPE html>
@@ -47,7 +54,7 @@ you're debugging aight itself) in a [conditional
 comment](http://www.quirksmode.org/css/condcom.html) inside the `<head>`:
 
 ```html
-<!--[if lt IE 9]>
+<!--[if lte IE 9]>
 <script type="text/javascript" src="aight.min.js"></script>
 <![endif]-->
 ```
@@ -60,7 +67,7 @@ Bringing it all together, you end up with:
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-    <!--[if lt IE 9]>
+    <!--[if lte IE 9]>
     <script type="text/javascript" src="aight.min.js"></script>
     <![endif]-->
   </head>
@@ -70,3 +77,19 @@ Bringing it all together, you end up with:
 ```
 
 For your convenience, this snippet is included with aight in `template.html`.
+
+## What about SVG? <a name="svg"></a>
+Shimming SVG support is tricky business. If you need to support IE8, my
+suggestion is either to [degrade gracefully](https://www.google.com/search?q=graceful%20degradation)
+using HTML elements or to try one of the following:
+
+- [Raphaël](http://raphaeljs.com/), the SVG-friendly abstraction that falls
+  back to VML support in IE8.
+- [r2d3](https://github.com/mhemesath/r2d3/) uses Raphaël under the hood to
+  provide SVG rendering support to [D3](http://d3js.org).
+- [svgweb](https://code.google.com/p/svgweb/) is a Flash-based SVG renderer.
+  This is **beta** software which lacks full SVG 1.1 support and will not allow
+  you to style SVG with CSS.
+
+IE9 has [great SVG support](http://blogs.msdn.com/b/ie/archive/2010/03/18/svg-in-ie9-roadmap.aspx),
+though.

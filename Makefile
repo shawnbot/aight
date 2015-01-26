@@ -1,22 +1,27 @@
 JS_FILES = \
-	js/aight.js \
-	js/classList/classList.js \
-	js/es5-shim/es5-shim.js \
-	js/computed-style.js \
-	js/css-properties.js \
-	js/element-createElementNS.js \
-	js/element-events.js \
-	js/element-properties.js
+	src/start.js \
+	lib/es5-shim/es5-shim.js \
+	lib/es5-shim/es5-sham.js \
+	src/aight.js \
+	src/before-ie8.js \
+	lib/ie8/src/ie8.js \
+	src/after-ie8.js \
+	lib/dom4/src/dom4.js \
+	lib/html5shiv/src/html5shiv.js \
+	src/css-om.js \
+	src/createElementNS.js \
+	src/end.js
 
 JS_COMPILER ?= uglifyjs
 
-all: aight.js aight.min.js aight.d3.min.js
-
-clean:
-	rm -f aight.js aight.min.js
+all: aight.js aight.min.js
+# TODO aight.d3.min.js
 
 aight.js: $(JS_FILES)
 	cat $(JS_FILES) > $@
 
 %.min.js: %.js
 	$(JS_COMPILER) $< > $@
+
+clean:
+	rm -f aight.js aight.min.js
