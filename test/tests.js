@@ -93,6 +93,15 @@ module("DOM");
     assert.equal(node.firstChild.textContent, "bar", "first child's textContent should be 'bar'");
   });
 
+  test("createElementNS", function(assert) {
+    try {
+      var node = document.createElementNS("span", null);
+      assert.ok(node, "no node created by createElementNS");
+    } catch (err) {
+      assert.ok(err.message.match(/does not support namespaces/), "createElementNS() throws the wrong error");
+    }
+  });
+
 })();
 
 module("CSS");
