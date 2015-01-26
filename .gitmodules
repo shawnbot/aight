@@ -1,6 +1,3 @@
-[submodule "css/pie"]
-	path = css/pie
-	url = https://github.com/lojjic/PIE.git
 [submodule "lib/ie8"]
 	path = lib/ie8
 	url = git@github.com:WebReflection/ie8.git
