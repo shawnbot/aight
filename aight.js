@@ -1954,7 +1954,7 @@ if (!Object.isExtensible) {
 if (aight.browser.ie < 9) {
 
   /*! (C) WebReflection Mit Style License */
-  // if (document.createEvent) return;
+  if (document.createEvent) return;
   var
     DUNNOABOUTDOMLOADED = true,
     READYEVENTDISPATCHED = false,
@@ -2043,12 +2043,6 @@ if (aight.browser.ie < 9) {
     var descriptor = getOwnPropertyDescriptor(
       protoSource || protoDest, property
     );
-
-    if (!descriptor) {
-      // console.warn("no fallback descriptor for ", protoDest, "#", property, " in ", protoSource);
-      return false;
-    }
-
     defineProperty(
       protoDest,
       'textContent',
