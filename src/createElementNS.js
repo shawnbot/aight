@@ -1,6 +1,7 @@
 if (!('createElementNS' in document)) {
-  window.HTMLDocument.createElementNS = function(ns, name) {
-    if (ns) throw "sorry, this browser does not support namespaces";
+  var DocumentPrototype = window.HTMLDocument.prototype;
+  DocumentPrototype.createElementNS = function(ns, name) {
+    if (ns) throw new Error("sorry, this browser does not support namespaces");
     return DocumentPrototype.createElement.call(this, name);
   };
 }
