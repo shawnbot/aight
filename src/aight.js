@@ -26,3 +26,21 @@
   Object.keys(aight).forEach(function(k) {
     exports[k] = aight[k];
   });
+
+
+  function aliasInterface(ns, expectedName, nonStandardName) {
+    if (ns[nonStandardName] && !ns[expectedName]) {
+      ns[expectedName] = ns[nonStandardName];
+      return true;
+    }
+    return false;
+  }
+
+  function shimPropertyAccessor(klass, property, shim) {
+    if (klass && !(property in klass.prototype)) {
+      return shim(klass.prototype, property);
+    }
+  }
+
+  aliasInterface(window, "HTMLCommentElement", "Comment");
+  aliasInterface(window, "HTMLDocument", "Document");
