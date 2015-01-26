@@ -1,0 +1,42 @@
+{
+  "name": "aight",
+  "version": "2.0.1",
+  "description": "un-suck DOM and CSS APIs in old IE",
+  "main": "aight.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "uglify-js": "^2.4.16"
+  },
+  "devDependencies": {
+    "uglify-js": "^2.4.16",
+    "watchy": "^0.6.0",
+    "zuul": "^1.16.5"
+  },
+  "scripts": {
+    "test":       "zuul -- test/tests.js",
+    "test:local": "zuul --local 8080 -- test/tests.js",
+    "watch":      "watchy -w lib,src,Makefile -- make clean all",
+    "watch:test": "watchy -w *.js,test -- npm run test:local"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shawnbot/aight.git"
+  },
+  "keywords": [
+    "js",
+    "dom",
+    "ie",
+    "ie8",
+    "ie9",
+    "windows",
+    "compatibility"
+  ],
+  "author": "Shawn Allen <shawn.allen@hush.com>",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/shawnbot/aight/issues"
+  },
+  "homepage": "https://github.com/shawnbot/aight"
+}

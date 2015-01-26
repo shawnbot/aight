@@ -1,3 +1,8 @@
+// zuul browserifies aight.js, so we need to do this:
+if (typeof require === "function" && !window.aight) {
+  aight = require("../aight");
+}
+
 var module = QUnit.module,
     test = QUnit.test;
 
@@ -72,7 +77,8 @@ module("DOM");
     assert.equal(node.innerHTML, "foo");
 
     node.innerHTML = "<b>foo</b>";
-    assert.equal(node.firstChild.textContent, "foo");
+    assert.equal(node.childNodes.length, 1, "setting innerHTML should produce a single childNode")
+    assert.equal(node.firstChild.textContent, "foo", "first child's textContent should be 'foo'");
   });
 
   test("innerText", function(assert) {
@@ -83,19 +89,18 @@ module("DOM");
     assert.equal(node.innerHTML, "bar");
 
     node.innerHTML = "<b>bar</b>";
-    assert.equal(node.firstChild.textContent, "bar");
+    assert.equal(node.childNodes.length, 1, "setting innerHTML should produce a single childNode")
+    assert.equal(node.firstChild.textContent, "bar", "first child's textContent should be 'bar'");
   });
 
-  /*
-  test("dataset", function(assert) {
-    var node = document.createElement("div");
-    assert.ok(node.dataset);
-    node.setAttribute("data-foo", "bar");
-    assert.equal(node.dataset.foo, "bar");
-    node.dataset.foo = "baz";
-    assert.equal(node.dataset.foo, "baz");
+  test("createElementNS", function(assert) {
+    try {
+      var node = document.createElementNS("span", null);
+      assert.ok(node, "no node created by createElementNS");
+    } catch (err) {
+      assert.ok(err.message.match(/does not support namespaces/), "createElementNS() throws the wrong error");
+    }
   });
-  */
 
 })();
 
@@ -126,15 +131,29 @@ module("CSS");
     assert.equal(node.style.getPropertyValue("background-color"), "red");
   });
 
+  test("classList", function(assert) {
+    var node = document.createElement("div");
+    assert.ok(node.classList, "element has classList property");
+    node.classList.add("foo");
+    assert.ok(node.classList.contains("foo"), "classList.add('foo') does not produce 'foo' in classList");
+    assert.equal(node.className, "foo", "classList.add('foo') does not produce 'foo' in classList");
+    node.className = "bar baz";
+    assert.equal(node.classList.contains("foo"), false, "setting className does not update classList");
+    assert.equal(node.classList.contains("bar"), true, "className = 'bar baz' -> !classList.contains('bar')");
+    assert.equal(node.classList.contains("baz"), true, "className = 'bar baz' -> !classList.contains('bar')");
+    node.classList.add("foo");
+    assert.equal(node.classList.contains("foo"), true, "classList.append('foo') doesn't work");
+  });
+
   test("window.getComputedStyle()", function(assert) {
     assert.ok(window.getComputedStyle, "window.getComputedStyle() is not a function");
 
     var node = document.createElement("div");
     document.body.appendChild(node);
 
-    var red =   ["red",   "rgb(255, 0, 0)", "#FF0000"],
-        green = ["green", "rgb(0, 128, 0)", "#008A00"],
-        blue =  ["blue",  "rgb(0, 0, 255)", "#0000FF"],
+    var red =   ["red",   "rgb(255, 0, 0)", "#ff0000"],
+        green = ["green", "rgb(0, 128, 0)", "#008a00"],
+        blue =  ["blue",  "rgb(0, 0, 255)", "#0000ff"],
         getColor = function() {
           return window.getComputedStyle(node, null)
             .getPropertyValue("color")

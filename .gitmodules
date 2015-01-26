@@ -1,12 +1,13 @@
-[submodule "css/pie"]
-	path = css/pie
-	url = https://github.com/lojjic/PIE.git
 [submodule "lib/ie8"]
 	path = lib/ie8
-	url = git@github.com:WebReflection/ie8.git
+	url = git@github.com:shawnbot/ie8.git
+	branch = ie9
 [submodule "lib/dom4"]
 	path = lib/dom4
-	url = git@github.com:WebReflection/dom4.git
+	url = git@github.com:shawnbot/dom4.git
 [submodule "lib/es5-shim"]
 	path = lib/es5-shim
 	url = git@github.com:es-shims/es5-shim.git
+[submodule "lib/html5shiv"]
+	path = lib/html5shiv
+	url = https://github.com/aFarkas/html5shiv.git

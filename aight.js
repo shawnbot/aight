@@ -3,833 +3,8 @@
  * is a collection of JavaScript shims and polyfills that make IE8 (and other
  * legacy browsers) behave a lot more like modern ones.
  */
-(function() {
-
-  aight = (function() {
-    var nav = navigator.appName,
-        version = navigator.appVersion,
-        ie = (nav == 'Microsoft Internet Explorer');
-    if (ie) {
-      var match = navigator.userAgent.match(/MSIE ([0-9]{1,}[\.0-9]{0,})/);
-      version = match ? parseFloat(match[1]) : 0;
-    }
-    return {
-      version: "2.0.0",
-      browser: {
-        name:     nav,
-        version:  version,
-        ie:       ie,
-        ie10:     (ie && version >= 10),
-        ie9:      (ie && version >= 9 && version < 10),
-        ie8:      (ie && version >= 8 && version < 9),
-        ie7:      (ie && version >= 7 && version < 8),
-        ie6:      (ie && version >= 6 && version < 7)
-      }
-    };
-  })();
-
-
-  /*! (C) WebReflection Mit Style License */
-  if (document.createEvent) return;
-  var
-    DUNNOABOUTDOMLOADED = true,
-    READYEVENTDISPATCHED = false,
-    ONREADYSTATECHANGE = 'onreadystatechange',
-    DOMCONTENTLOADED = 'DOMContentLoaded',
-    SECRET = '__IE8__' + Math.random(),
-    Object = window.Object,
-    defineProperty = Object.defineProperty ||
-    // just in case ...
-    function (object, property, descriptor) {
-      object[property] = descriptor.value;
-    },
-    defineProperties = Object.defineProperties ||
-    // IE8 implemented defineProperty but not the plural...
-    function (object, descriptors) {
-      for(var key in descriptors) {
-        if (hasOwnProperty.call(descriptors, key)) {
-          defineProperty(object, key, descriptors[key]);
-        }
-      }
-    },
-    hasOwnProperty = Object.prototype.hasOwnProperty,
-    // here IE7 will break like a charm
-    ElementPrototype = window.Element.prototype,
-    EventPrototype = window.Event.prototype,
-    DocumentPrototype = window.HTMLDocument.prototype,
-    WindowPrototype = window.Window.prototype,
-    // none of above native constructors exist/are exposed
-    possiblyNativeEvent = /^[a-z]+$/,
-    // ^ actually could probably be just /^[a-z]+$/
-    readyStateOK = /loaded|complete/,
-    types = {},
-    div = document.createElement('div')
-  ;
-
-  function commonEventLoop(currentTarget, e, $handlers, synthetic) {
-    for(var
-      continuePropagation,
-      handlers = $handlers.slice(),
-      evt = enrich(e, currentTarget),
-      i = 0, length = handlers.length; i < length; i++
-    ) {
-      handler = handlers[i];
-      if (
-        typeof handler === 'object' &&
-        typeof handler.handleEvent === 'function'
-      ) {
-        handler.handleEvent(evt);
-      } else {
-        handler.call(currentTarget, evt);
-      }
-      if (evt.stoppedImmediatePropagation) break;
-    }
-    continuePropagation = !evt.stoppedPropagation;
-    /*
-    if (continuePropagation && !synthetic && !live(currentTarget)) {
-      evt.cancelBubble = true;
-    }
-    */
-    return (
-      synthetic &&
-      continuePropagation &&
-      currentTarget.parentNode
-    ) ?
-      currentTarget.parentNode.dispatchEvent(evt) :
-      !evt.defaultPrevented
-    ;
-  }
-
-  function enrich(e, currentTarget) {
-    e.currentTarget = currentTarget;
-    e.eventPhase = (
-      // AT_TARGET : BUBBLING_PHASE
-      e.target === e.currentTarget ? 2 : 3
-    );
-    return e;
-  }
-
-  function find(array, value) {
-    var i = array.length;
-    while(i-- && array[i] !== value);
-    return i;
-  }
-
-  function live(self) {
-    return self.nodeType !== 9 && document.documentElement.contains(self);
-  }
-
-  function onReadyState(e) {
-    if (!READYEVENTDISPATCHED && readyStateOK.test(
-      document.readyState
-    )) {
-      READYEVENTDISPATCHED = !READYEVENTDISPATCHED;
-      document.detachEvent(ONREADYSTATECHANGE, onReadyState);
-      e = document.createEvent('Event');
-      e.initEvent(DOMCONTENTLOADED, true, true);
-      document.dispatchEvent(e);
-    }
-  }
-
-  function verify(self, e) {
-    if (!e) {
-      e = window.event;
-    }
-    if (!e.target) {
-      e.target = e.srcElement || e.fromElement || document;
-    }
-    if (!e.timeStamp) {
-      e.timeStamp = (new Date).getTime();
-    }
-    return e;
-  }
-
-  defineProperties(
-    ElementPrototype,
-    {
-      // bonus
-      textContent: {
-        get: function () {
-          return this.innerText;
-        },
-        set: function (innerText) {
-          // TODO: maybe this one is safer/better or ... both?
-          // this.innerText = '';
-          // this.appendChild(document.createTextNode(innerText));
-          this.innerText = innerText;
-        }
-      },
-      // http://www.w3.org/TR/ElementTraversal/#interface-elementTraversal
-      firstElementChild: {
-        get: function () {
-          for(var
-            childNodes = this.childNodes || [],
-            i = 0, length = childNodes.length;
-            i < length; i++
-          ) {
-            if (childNodes[i].nodeType == 1) return childNodes[i];
-          }
-        }
-      },
-      lastElementChild: {
-        get: function () {
-          for(var
-            childNodes = this.childNodes || [],
-            i = childNodes.length;
-            i--;
-          ) {
-            if (childNodes[i].nodeType == 1) return childNodes[i];
-          }
-        }
-      },
-      previousElementSibling: {
-        get: function () {
-          var previousElementSibling = this.previousSibling;
-          while (previousElementSibling && previousElementSibling.nodeType != 1) {
-            previousElementSibling = previousElementSibling.previousSibling;
-          }
-          return previousElementSibling;
-        }
-      },
-      nextElementSibling: {
-        get: function () {
-          var nextElementSibling = this.nextSibling;
-          while (nextElementSibling && nextElementSibling.nodeType != 1) {
-            nextElementSibling = nextElementSibling.nextSibling;
-          }
-          return nextElementSibling;
-        }
-      },
-      childElementCount: {
-        get: function () {
-          for(var
-            count = 0,
-            childNodes = this.childNodes || [],
-            i = childNodes.length; i--; count += childNodes[i].nodeType == 1
-          );
-          return count;
-        }
-      },
-      /*
-      // children would be an override
-      // IE8 already supports them but with comments too
-      // not just nodeType 1
-      children: {
-        get: function () {
-          for(var
-            children = [],
-            childNodes = this.childNodes || [],
-            i = 0, length = childNodes.length;
-            i < length; i++
-          ) {
-            if (childNodes[i].nodeType == 1) {
-              children.push(childNodes[i]);
-            }
-          }
-          return children;
-        }
-      },
-      */
-      // DOM Level 2 EventTarget methods and events
-      addEventListener: {value: function (type, handler, capture) {
-        var
-          self = this,
-          ontype = 'on' + type,
-          temple =  self[SECRET] ||
-                      defineProperty(
-                        self, SECRET, {value: {}}
-                      )[SECRET],
-          currentType = temple[ontype] || (temple[ontype] = {}),
-          handlers  = currentType.h || (currentType.h = []),
-          e
-        ;
-        if (!hasOwnProperty.call(currentType, 'w')) {
-          currentType.w = function (e) {
-            // e[SECRET] is a silent notification needed to avoid
-            // fired events during live test
-            return e[SECRET] || commonEventLoop(self, verify(self, e), handlers, false);
-          };
-          // if not detected yet
-          if (!hasOwnProperty.call(types, ontype)) {
-            // and potentially a native event
-            if(possiblyNativeEvent.test(type)) {
-              // do this heavy thing
-              try {
-                // TODO:  should I consider tagName too so that
-                //        INPUT[ontype] could be different ?
-                e = document.createEventObject();
-                // do not clone ever a node
-                // specially a document one ...
-                // use the secret to ignore them all
-                e[SECRET] = true;
-                // document a part if a node has never been
-                // added to any other node, fireEvent might
-                // behave very weirdly (read: trigger unspecified errors)
-                if (self.nodeType != 9 && self.parentNode == null) {
-                  div.appendChild(self);
-                }
-                self.fireEvent(ontype, e);
-                types[ontype] = true;
-              } catch(e) {
-                types[ontype] = false;
-                while (div.hasChildNodes()) {
-                  div.removeChild(div.firstChild);
-                }
-              }
-            } else {
-              // no need to bother since
-              // 'x-event' ain't native for sure
-              types[ontype] = false;
-            }
-          }
-          if (currentType.n = types[ontype]) {
-            self.attachEvent(ontype, currentType.w);
-          }
-        }
-        if (find(handlers, handler) < 0) {
-          handlers[capture ? 'unshift' : 'push'](handler);
-        }
-      }},
-      dispatchEvent: {value: function (e) {
-        var
-          self = this,
-          ontype = 'on' + e.type,
-          temple =  self[SECRET],
-          currentType = temple && temple[ontype],
-          valid = !!currentType,
-          parentNode
-        ;
-        if (!e.target) e.target = self;
-        return (valid ? (
-          currentType.n /* && live(self) */ ?
-            self.fireEvent(ontype, e) :
-            commonEventLoop(
-              self,
-              e,
-              currentType.h,
-              true
-            )
-        ) : (
-          (parentNode = self.parentNode) /* && live(self) */ ?
-            parentNode.dispatchEvent(e) :
-            true
-        )), !e.defaultPrevented;
-      }},
-      removeEventListener: {value: function (type, handler, capture) {
-        var
-          self = this,
-          ontype = 'on' + type,
-          temple =  self[SECRET],
-          currentType = temple && temple[ontype],
-          handlers = currentType && currentType.h,
-          i = handlers ? find(handlers, handler) : -1
-        ;
-        if (-1 < i) handlers.splice(i, 1);
-      }}
-    }
-  );
-
-  // EventTarget methods for Text nodes too
-  defineProperties(window.Text.prototype, {
-    addEventListener: {value: ElementPrototype.addEventListener},
-    dispatchEvent: {value: ElementPrototype.dispatchEvent},
-    removeEventListener: {value: ElementPrototype.removeEventListener}
-  });
-
-  defineProperties(
-    XMLHttpRequest.prototype,
-    {
-      addEventListener: {value: function (type, handler, capture) {
-        var
-          self = this,
-          ontype = 'on' + type,
-          temple =  self[SECRET] ||
-                      defineProperty(
-                        self, SECRET, {value: {}}
-                      )[SECRET],
-          currentType = temple[ontype] || (temple[ontype] = {}),
-          handlers  = currentType.h || (currentType.h = [])
-        ;
-        if (find(handlers, handler) < 0) {
-          if (!self[ontype]) {
-            self[ontype] = function () {
-              var e = document.createEvent('Event');
-              e.initEvent(type, true, true);
-              self.dispatchEvent(e);
-            };
-          }
-          handlers[capture ? 'unshift' : 'push'](handler);
-        }
-      }},
-      dispatchEvent: {value: function (e) {
-        var
-          self = this,
-          ontype = 'on' + e.type,
-          temple =  self[SECRET],
-          currentType = temple && temple[ontype],
-          valid = !!currentType
-        ;
-        return valid && (
-          currentType.n /* && live(self) */ ?
-            self.fireEvent(ontype, e) :
-            commonEventLoop(
-              self,
-              e,
-              currentType.h,
-              true
-            )
-        );
-      }},
-      removeEventListener: {value: ElementPrototype.removeEventListener}
-    }
-  );
-
-  defineProperties(
-    EventPrototype,
-    {
-      bubbles: {value: true, writable: true},
-      cancelable: {value: true, writable: true},
-      preventDefault: {value: function () {
-        if (this.cancelable) {
-          this.defaultPrevented = true;
-          this.returnValue = false;
-        }
-      }},
-      stopPropagation: {value: function () {
-        this.stoppedPropagation = true;
-        this.cancelBubble = true;
-      }},
-      stopImmediatePropagation: {value: function () {
-        this.stoppedImmediatePropagation = true;
-        this.stopPropagation();
-      }},
-      initEvent: {value: function(type, bubbles, cancelable){
-        this.type = type;
-        this.bubbles = !!bubbles;
-        this.cancelable = !!cancelable;
-        if (!this.bubbles) {
-          this.stopPropagation();
-        }
-      }}
-    }
-  );
-
-  defineProperties(
-    DocumentPrototype,
-    {
-      addEventListener: {value: function(type, handler, capture) {
-        var self = this;
-        ElementPrototype.addEventListener.call(self, type, handler, capture);
-        // NOTE:  it won't fire if already loaded, this is NOT a $.ready() shim!
-        //        this behaves just like standard browsers
-        if (
-          DUNNOABOUTDOMLOADED &&
-          type === DOMCONTENTLOADED &&
-          !readyStateOK.test(
-            self.readyState
-          )
-        ) {
-          DUNNOABOUTDOMLOADED = false;
-          self.attachEvent(ONREADYSTATECHANGE, onReadyState);
-          if (window == top) {
-            (function gonna(e){try{
-              self.documentElement.doScroll('left');
-              onReadyState();
-              }catch(o_O){
-              setTimeout(gonna, 50);
-            }}());
-          }
-        }
-      }},
-      dispatchEvent: {value: ElementPrototype.dispatchEvent},
-      removeEventListener: {value: ElementPrototype.removeEventListener},
-      createEvent: {value: function(Class){
-        var e;
-        if (Class !== 'Event') throw new Error('unsupported ' + Class);
-        e = document.createEventObject();
-        e.timeStamp = (new Date).getTime();
-        return e;
-      }}
-    }
-  );
-
-  defineProperties(
-    WindowPrototype,
-    {
-      getComputedStyle: {value: function(){
-
-        var // partially grabbed from jQuery and Dean's hack
-          notpixel = /^(?:[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|))(?!px)[a-z%]+$/,
-          position = /^(top|right|bottom|left)$/,
-          re = /\-([a-z])/g,
-          place = function (match, $1) {
-            return $1.toUpperCase();
-          }
-        ;
-
-        function ComputedStyle(_) {
-          this._ = _;
-        }
-
-        ComputedStyle.prototype.getPropertyValue = function (name) {
-          var
-            el = this._,
-            style = el.style,
-            currentStyle = el.currentStyle,
-            runtimeStyle = el.runtimeStyle,
-            result,
-            left,
-            rtLeft
-          ;
-          name = (name === 'float' ? 'style-float' : name).replace(re, place);
-          result = currentStyle ? currentStyle[name] : style[name];
-          if (notpixel.test(result) && !position.test(name)) {
-            left = style.left;
-            rtLeft = runtimeStyle && runtimeStyle.left;
-            if (rtLeft) {
-              runtimeStyle.left = currentStyle.left;
-            }
-            style.left = name === 'fontSize' ? '1em' : result;
-            result = style.pixelLeft + 'px';
-            style.left = left;
-            if (rtLeft) {
-              runtimeStyle.left = rtLeft;
-            }
-          }
-          return result == null ?
-            result : ((result + '') || 'auto');
-        };
-
-        // unsupported
-        function PseudoComputedStyle() {}
-        PseudoComputedStyle.prototype.getPropertyValue = function () {
-          return null;
-        };
-
-        return function (el, pseudo) {
-          return pseudo ?
-            new PseudoComputedStyle(el) :
-            new ComputedStyle(el);
-        };
-
-      }()},
-
-      addEventListener: {value: function (type, handler, capture) {
-        var
-          self = window,
-          ontype = 'on' + type,
-          handlers
-        ;
-        if (!self[ontype]) {
-          self[ontype] = function(e) {
-            return commonEventLoop(self, verify(self, e), handlers, false);
-          };
-        }
-        handlers = self[ontype][SECRET] || (
-          self[ontype][SECRET] = []
-        );
-        if (find(handlers, handler) < 0) {
-          handlers[capture ? 'unshift' : 'push'](handler);
-        }
-      }},
-      dispatchEvent: {value: function (e) {
-        var method = window['on' + e.type];
-        return method ? method.call(window, e) !== false && !e.defaultPrevented : true;
-      }},
-      removeEventListener: {value: function (type, handler, capture) {
-        var
-          ontype = 'on' + type,
-          handlers = (window[ontype] || Object)[SECRET],
-          i = handlers ? find(handlers, handler) : -1
-         ;
-        if (-1 < i) handlers.splice(i, 1);
-      }}
-    }
-  );
-(function(window){'use strict';
-  /* jshint loopfunc: true, noempty: false*/
-  // http://www.w3.org/TR/dom/#element
-  function textNodeIfString(node) {
-    return typeof node === 'string' ? window.document.createTextNode(node) : node;
-  }
-  function mutationMacro(nodes) {
-    if (nodes.length === 1) {
-      return textNodeIfString(nodes[0]);
-    }
-    for (var
-      fragment = window.document.createDocumentFragment(),
-      list = slice.call(nodes),
-      i = 0; i < nodes.length; i++
-    ) {
-      fragment.appendChild(textNodeIfString(list[i]));
-    }
-    return fragment;
-  }
-  for(var
-    defineProperty = Object.defineProperty || function (object, property, descriptor) {
-      object.__defineGetter__(property, descriptor.get);
-    },
-    indexOf = [].indexOf || function indexOf(value){
-      var length = this.length;
-      while(length--) {
-        if (this[length] === value) {
-          break;
-        }
-      }
-      return length;
-    },
-    head,
-    property,
-    verifyToken,
-    DOMTokenList,
-    trim = /^\s+|\s+$/g,
-    spaces = /\s+/,
-    SPACE = '\x20',
-    toggle = function toggle(token, force) {
-      if (this.contains(token)) {
-        if (!force) {
-          // force is not true (either false or omitted)
-          this.remove(token);
-        }
-      } else if(force === undefined || force) {
-        force = true;
-        this.add(token);
-      }
-      return !!force;
-    },
-    ElementPrototype = (window.Element || window.Node || window.HTMLElement).prototype,
-    properties = [
-      'matches', (
-        ElementPrototype.matchesSelector ||
-        ElementPrototype.webkitMatchesSelector ||
-        ElementPrototype.khtmlMatchesSelector ||
-        ElementPrototype.mozMatchesSelector ||
-        ElementPrototype.msMatchesSelector ||
-        ElementPrototype.oMatchesSelector ||
-        function matches(selector) {
-          var parentNode = this.parentNode;
-          return !!parentNode && -1 < indexOf.call(
-            parentNode.querySelectorAll(selector),
-            this
-          );
-        }
-      ),
-      'prepend', function prepend() {
-        var firstChild = this.firstChild,
-            node = mutationMacro(arguments);
-        if (firstChild) {
-          this.insertBefore(node, firstChild);
-        } else {
-          this.appendChild(node);
-        }
-      },
-      'append', function append() {
-        this.appendChild(mutationMacro(arguments));
-      },
-      'before', function before() {
-        var parentNode = this.parentNode;
-        if (parentNode) {
-          parentNode.insertBefore(
-            mutationMacro(arguments), this
-          );
-        }
-      },
-      'after', function after() {
-        var parentNode = this.parentNode,
-            nextSibling = this.nextSibling,
-            node = mutationMacro(arguments);
-        if (parentNode) {
-          if (nextSibling) {
-            parentNode.insertBefore(node, nextSibling);
-          } else {
-            parentNode.appendChild(node);
-          }
-        }
-      },
-      'replace', function replace() {
-        var parentNode = this.parentNode;
-        if (parentNode) {
-          parentNode.replaceChild(
-            mutationMacro(arguments),
-            this
-          );
-        }
-      },
-      'remove', function remove() {
-        var parentNode = this.parentNode;
-        if (parentNode) {
-          parentNode.removeChild(this);
-        }
-      }
-    ],
-    slice = properties.slice,
-    i = properties.length; i; i -= 2
-  ) {
-    property = properties[i - 2];
-    if (!(property in ElementPrototype)) {
-      ElementPrototype[property] = properties[i - 1];
-    }
-  }
-  // http://www.w3.org/TR/dom/#domtokenlist
-  // iOS 5.1 has completely screwed this property
-  // classList in ElementPrototype is false
-  // but it's actually there as getter
-  if (!('classList' in document.documentElement)) {
-    // http://www.w3.org/TR/domcore/#domtokenlist
-    verifyToken = function (token) {
-      if (!token) {
-        throw 'SyntaxError';
-      } else if (spaces.test(token)) {
-        throw 'InvalidCharacterError';
-      }
-      return token;
-    };
-    DOMTokenList = function (node) {
-      var className = node.className.replace(trim, '');
-      if (className.length) {
-        properties.push.apply(
-          this,
-          className.split(spaces)
-        );
-      }
-      this._ = node;
-    };
-    DOMTokenList.prototype = {
-      length: 0,
-      add: function add() {
-        for(var j = 0, token; j < arguments.length; j++) {
-          token = arguments[j];
-          if(!this.contains(token)) {
-            properties.push.call(this, property);
-          }
-        }
-        this._.className = '' + this;
-      },
-      contains: (function(indexOf){
-        return function contains(token) {
-          i = indexOf.call(this, property = verifyToken(token));
-          return -1 < i;
-        };
-      }([].indexOf || function (token) {
-        i = this.length;
-        while(i-- && this[i] !== token){}
-        return i;
-      })),
-      item: function item(i) {
-        return this[i] || null;
-      },
-      remove: function remove() {
-        for(var j = 0, token; j < arguments.length; j++) {
-          token = arguments[j];
-          if(this.contains(token)) {
-            properties.splice.call(this, i, 1);
-          }
-        }
-        this._.className = '' + this;
-      },
-      toggle: toggle,
-      toString: function toString() {
-        return properties.join.call(this, SPACE);
-      }
-    };
-    defineProperty(ElementPrototype, 'classList', {
-      get: function get() {
-        return new DOMTokenList(this);
-      },
-      set: function(){}
-    });
-  } else {
-    // iOS 5.1 and Nokia ASHA do not support multiple add or remove
-    // trying to detect and fix that in here
-    DOMTokenList = document.createElement('div').classList;
-    DOMTokenList.add('a', 'b', 'a');
-    if ('a\x20b' != DOMTokenList) {
-      // no other way to reach original methods in iOS 5.1
-      ElementPrototype = DOMTokenList.constructor.prototype;
-      if (!('add' in ElementPrototype)) {
-        // ASHA double fails in here
-        ElementPrototype = window.DOMTokenList.prototype;
-      }
-      verifyToken = function (original) {
-        return function () {
-          var i = 0;
-          while (i < arguments.length) {
-            original.call(this, arguments[i++]);
-          }
-        };
-      };
-      ElementPrototype.add = verifyToken(ElementPrototype.add);
-      ElementPrototype.remove = verifyToken(ElementPrototype.remove);
-      // toggle is broken too ^_^ ... let's fix it
-      ElementPrototype.toggle = toggle;
-    }
-  }
-
-  if (!('head' in document)) {
-    defineProperty(document, 'head', {
-      get: function () {
-        return head || (
-          head = document.getElementsByTagName('head')[0]
-        );
-      }
-    });
-  }
-
-  // http://www.w3.org/TR/dom/#customevent
-  try{new window.CustomEvent('?')}catch(o_O){
-    window.CustomEvent = function(
-      eventName,
-      defaultInitDict
-    ){
-
-      // the infamous substitute
-      function CustomEvent(type, eventInitDict) {
-        var event = document.createEvent(eventName);
-        if (typeof type != 'string') {
-          throw new Error('An event name must be provided');
-        }
-        if (eventName == 'Event') {
-          event.initCustomEvent = initCustomEvent;
-        }
-        if (eventInitDict == null) {
-          eventInitDict = defaultInitDict;
-        }
-        event.initCustomEvent(
-          type,
-          eventInitDict.bubbles,
-          eventInitDict.cancelable,
-          eventInitDict.detail
-        );
-        return event;
-      }
-
-      // attached at runtime
-      function initCustomEvent(
-        type, bubbles, cancelable, detail
-      ) {
-        this.initEvent(type, bubbles, cancelable);
-        this.detail = detail;
-      }
-
-      // that's it
-      return CustomEvent;
-    }(
-      // is this IE9 or IE10 ?
-      // where CustomEvent is there
-      // but not usable as construtor ?
-      window.CustomEvent ?
-        // use the CustomEvent interface in such case
-        'CustomEvent' : 'Event',
-        // otherwise the common compatible one
-      {
-        bubbles: false,
-        cancelable: false,
-        detail: null
-      }
-    );
-  }
-
-}(window));/*!
+(function(exports) {
+/*!
  * https://github.com/es-shims/es5-shim
  * @license es5-shim Copyright 2009-2014 by contributors, MIT License
  * see https://github.com/es-shims/es5-shim/blob/master/LICENSE
@@ -2260,12 +1435,1797 @@ if (parseInt(ws + '08') !== 8 || parseInt(ws + '0x16') !== 22) {
 }
 
 }));
-if (!('createElementNS' in HTMLDocument.prototype)) {
-    HTMLDocument.prototype.createElementNS = function(ns, name) {
-        if (ns) throw "sorry, this browser does not support namespaces";
-        return HTMLDocument.prototype.createElement.call(this, name);
+/*!
+ * https://github.com/es-shims/es5-shim
+ * @license es5-shim Copyright 2009-2014 by contributors, MIT License
+ * see https://github.com/es-shims/es5-shim/blob/master/LICENSE
+ */
+
+// vim: ts=4 sts=4 sw=4 expandtab
+
+//Add semicolon to prevent IIFE from being passed as argument to concated code.
+;
+
+// UMD (Universal Module Definition)
+// see https://github.com/umdjs/umd/blob/master/returnExports.js
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(factory);
+    } else if (typeof exports === 'object') {
+        // Node. Does not work with strict CommonJS, but
+        // only CommonJS-like enviroments that support module.exports,
+        // like Node.
+        module.exports = factory();
+    } else {
+        // Browser globals (root is window)
+        root.returnExports = factory();
+  }
+}(this, function () {
+
+var call = Function.prototype.call;
+var prototypeOfObject = Object.prototype;
+var owns = call.bind(prototypeOfObject.hasOwnProperty);
+
+// If JS engine supports accessors creating shortcuts.
+var defineGetter;
+var defineSetter;
+var lookupGetter;
+var lookupSetter;
+var supportsAccessors = owns(prototypeOfObject, "__defineGetter__");
+if (supportsAccessors) {
+    defineGetter = call.bind(prototypeOfObject.__defineGetter__);
+    defineSetter = call.bind(prototypeOfObject.__defineSetter__);
+    lookupGetter = call.bind(prototypeOfObject.__lookupGetter__);
+    lookupSetter = call.bind(prototypeOfObject.__lookupSetter__);
+}
+
+// ES5 15.2.3.2
+// http://es5.github.com/#x15.2.3.2
+if (!Object.getPrototypeOf) {
+    // https://github.com/es-shims/es5-shim/issues#issue/2
+    // http://ejohn.org/blog/objectgetprototypeof/
+    // recommended by fschaefer on github
+    //
+    // sure, and webreflection says ^_^
+    // ... this will nerever possibly return null
+    // ... Opera Mini breaks here with infinite loops
+    Object.getPrototypeOf = function getPrototypeOf(object) {
+        var proto = object.__proto__;
+        if (proto || proto === null) {
+            return proto;
+        } else if (object.constructor) {
+            return object.constructor.prototype;
+        } else {
+            return prototypeOfObject;
+        }
     };
 }
+
+//ES5 15.2.3.3
+//http://es5.github.com/#x15.2.3.3
+
+function doesGetOwnPropertyDescriptorWork(object) {
+    try {
+        object.sentinel = 0;
+        return Object.getOwnPropertyDescriptor(
+                object,
+                "sentinel"
+        ).value === 0;
+    } catch (exception) {
+        // returns falsy
+    }
+}
+
+//check whether getOwnPropertyDescriptor works if it's given. Otherwise,
+//shim partially.
+if (Object.defineProperty) {
+    var getOwnPropertyDescriptorWorksOnObject = doesGetOwnPropertyDescriptorWork({});
+    var getOwnPropertyDescriptorWorksOnDom = typeof document === "undefined" ||
+    doesGetOwnPropertyDescriptorWork(document.createElement("div"));
+    if (!getOwnPropertyDescriptorWorksOnDom || !getOwnPropertyDescriptorWorksOnObject) {
+        var getOwnPropertyDescriptorFallback = Object.getOwnPropertyDescriptor;
+    }
+}
+
+if (!Object.getOwnPropertyDescriptor || getOwnPropertyDescriptorFallback) {
+    var ERR_NON_OBJECT = "Object.getOwnPropertyDescriptor called on a non-object: ";
+
+    Object.getOwnPropertyDescriptor = function getOwnPropertyDescriptor(object, property) {
+        if ((typeof object !== "object" && typeof object !== "function") || object === null) {
+            throw new TypeError(ERR_NON_OBJECT + object);
+        }
+
+        // make a valiant attempt to use the real getOwnPropertyDescriptor
+        // for I8's DOM elements.
+        if (getOwnPropertyDescriptorFallback) {
+            try {
+                return getOwnPropertyDescriptorFallback.call(Object, object, property);
+            } catch (exception) {
+                // try the shim if the real one doesn't work
+            }
+        }
+
+        // If object does not owns property return undefined immediately.
+        if (!owns(object, property)) {
+            return;
+        }
+
+        // If object has a property then it's for sure both `enumerable` and
+        // `configurable`.
+        var descriptor =  { enumerable: true, configurable: true };
+
+        // If JS engine supports accessor properties then property may be a
+        // getter or setter.
+        if (supportsAccessors) {
+            // Unfortunately `__lookupGetter__` will return a getter even
+            // if object has own non getter property along with a same named
+            // inherited getter. To avoid misbehavior we temporary remove
+            // `__proto__` so that `__lookupGetter__` will return getter only
+            // if it's owned by an object.
+            var prototype = object.__proto__;
+            var notPrototypeOfObject = object !== prototypeOfObject;
+            // avoid recursion problem, breaking in Opera Mini when
+            // Object.getOwnPropertyDescriptor(Object.prototype, 'toString')
+            // or any other Object.prototype accessor
+            if (notPrototypeOfObject) {
+                object.__proto__ = prototypeOfObject;
+            }
+
+            var getter = lookupGetter(object, property);
+            var setter = lookupSetter(object, property);
+
+            if (notPrototypeOfObject) {
+                // Once we have getter and setter we can put values back.
+                object.__proto__ = prototype;
+            }
+
+            if (getter || setter) {
+                if (getter) {
+                    descriptor.get = getter;
+                }
+                if (setter) {
+                    descriptor.set = setter;
+                }
+                // If it was accessor property we're done and return here
+                // in order to avoid adding `value` to the descriptor.
+                return descriptor;
+            }
+        }
+
+        // If we got this far we know that object has an own property that is
+        // not an accessor so we set it as a value and return descriptor.
+        descriptor.value = object[property];
+        descriptor.writable = true;
+        return descriptor;
+    };
+}
+
+// ES5 15.2.3.4
+// http://es5.github.com/#x15.2.3.4
+if (!Object.getOwnPropertyNames) {
+    Object.getOwnPropertyNames = function getOwnPropertyNames(object) {
+        return Object.keys(object);
+    };
+}
+
+// ES5 15.2.3.5
+// http://es5.github.com/#x15.2.3.5
+if (!Object.create) {
+
+    // Contributed by Brandon Benvie, October, 2012
+    var createEmpty;
+    var supportsProto = !({__proto__:null} instanceof Object);
+                        // the following produces false positives
+                        // in Opera Mini => not a reliable check
+                        // Object.prototype.__proto__ === null
+    if (supportsProto || typeof document === 'undefined') {
+        createEmpty = function () {
+            return { "__proto__": null };
+        };
+    } else {
+        // In old IE __proto__ can't be used to manually set `null`, nor does
+        // any other method exist to make an object that inherits from nothing,
+        // aside from Object.prototype itself. Instead, create a new global
+        // object and *steal* its Object.prototype and strip it bare. This is
+        // used as the prototype to create nullary objects.
+        createEmpty = function () {
+            var iframe = document.createElement('iframe');
+            var parent = document.body || document.documentElement;
+            iframe.style.display = 'none';
+            parent.appendChild(iframe);
+            iframe.src = 'javascript:';
+            var empty = iframe.contentWindow.Object.prototype;
+            parent.removeChild(iframe);
+            iframe = null;
+            delete empty.constructor;
+            delete empty.hasOwnProperty;
+            delete empty.propertyIsEnumerable;
+            delete empty.isPrototypeOf;
+            delete empty.toLocaleString;
+            delete empty.toString;
+            delete empty.valueOf;
+            empty.__proto__ = null;
+
+            function Empty() {}
+            Empty.prototype = empty;
+            // short-circuit future calls
+            createEmpty = function () {
+                return new Empty();
+            };
+            return new Empty();
+        };
+    }
+
+    Object.create = function create(prototype, properties) {
+
+        var object;
+        function Type() {}  // An empty constructor.
+
+        if (prototype === null) {
+            object = createEmpty();
+        } else {
+            if (typeof prototype !== "object" && typeof prototype !== "function") {
+                // In the native implementation `parent` can be `null`
+                // OR *any* `instanceof Object`  (Object|Function|Array|RegExp|etc)
+                // Use `typeof` tho, b/c in old IE, DOM elements are not `instanceof Object`
+                // like they are in modern browsers. Using `Object.create` on DOM elements
+                // is...err...probably inappropriate, but the native version allows for it.
+                throw new TypeError("Object prototype may only be an Object or null"); // same msg as Chrome
+            }
+            Type.prototype = prototype;
+            object = new Type();
+            // IE has no built-in implementation of `Object.getPrototypeOf`
+            // neither `__proto__`, but this manually setting `__proto__` will
+            // guarantee that `Object.getPrototypeOf` will work as expected with
+            // objects created using `Object.create`
+            object.__proto__ = prototype;
+        }
+
+        if (properties !== void 0) {
+            Object.defineProperties(object, properties);
+        }
+
+        return object;
+    };
+}
+
+// ES5 15.2.3.6
+// http://es5.github.com/#x15.2.3.6
+
+// Patch for WebKit and IE8 standard mode
+// Designed by hax <hax.github.com>
+// related issue: https://github.com/es-shims/es5-shim/issues#issue/5
+// IE8 Reference:
+//     http://msdn.microsoft.com/en-us/library/dd282900.aspx
+//     http://msdn.microsoft.com/en-us/library/dd229916.aspx
+// WebKit Bugs:
+//     https://bugs.webkit.org/show_bug.cgi?id=36423
+
+function doesDefinePropertyWork(object) {
+    try {
+        Object.defineProperty(object, "sentinel", {});
+        return "sentinel" in object;
+    } catch (exception) {
+        // returns falsy
+    }
+}
+
+// check whether defineProperty works if it's given. Otherwise,
+// shim partially.
+if (Object.defineProperty) {
+    var definePropertyWorksOnObject = doesDefinePropertyWork({});
+    var definePropertyWorksOnDom = typeof document === "undefined" ||
+        doesDefinePropertyWork(document.createElement("div"));
+    if (!definePropertyWorksOnObject || !definePropertyWorksOnDom) {
+        var definePropertyFallback = Object.defineProperty,
+            definePropertiesFallback = Object.defineProperties;
+    }
+}
+
+if (!Object.defineProperty || definePropertyFallback) {
+    var ERR_NON_OBJECT_DESCRIPTOR = "Property description must be an object: ";
+    var ERR_NON_OBJECT_TARGET = "Object.defineProperty called on non-object: "
+    var ERR_ACCESSORS_NOT_SUPPORTED = "getters & setters can not be defined " +
+                                      "on this javascript engine";
+
+    Object.defineProperty = function defineProperty(object, property, descriptor) {
+        if ((typeof object !== "object" && typeof object !== "function") || object === null) {
+            throw new TypeError(ERR_NON_OBJECT_TARGET + object);
+        }
+        if ((typeof descriptor !== "object" && typeof descriptor !== "function") || descriptor === null) {
+            throw new TypeError(ERR_NON_OBJECT_DESCRIPTOR + descriptor);
+        }
+        // make a valiant attempt to use the real defineProperty
+        // for I8's DOM elements.
+        if (definePropertyFallback) {
+            try {
+                return definePropertyFallback.call(Object, object, property, descriptor);
+            } catch (exception) {
+                // try the shim if the real one doesn't work
+            }
+        }
+
+        // If it's a data property.
+        if (owns(descriptor, "value")) {
+            // fail silently if "writable", "enumerable", or "configurable"
+            // are requested but not supported
+            /*
+            // alternate approach:
+            if ( // can't implement these features; allow false but not true
+                !(owns(descriptor, "writable") ? descriptor.writable : true) ||
+                !(owns(descriptor, "enumerable") ? descriptor.enumerable : true) ||
+                !(owns(descriptor, "configurable") ? descriptor.configurable : true)
+            )
+                throw new RangeError(
+                    "This implementation of Object.defineProperty does not " +
+                    "support configurable, enumerable, or writable."
+                );
+            */
+
+            if (supportsAccessors && (lookupGetter(object, property) ||
+                                      lookupSetter(object, property)))
+            {
+                // As accessors are supported only on engines implementing
+                // `__proto__` we can safely override `__proto__` while defining
+                // a property to make sure that we don't hit an inherited
+                // accessor.
+                var prototype = object.__proto__;
+                object.__proto__ = prototypeOfObject;
+                // Deleting a property anyway since getter / setter may be
+                // defined on object itself.
+                delete object[property];
+                object[property] = descriptor.value;
+                // Setting original `__proto__` back now.
+                object.__proto__ = prototype;
+            } else {
+                object[property] = descriptor.value;
+            }
+        } else {
+            if (!supportsAccessors) {
+                throw new TypeError(ERR_ACCESSORS_NOT_SUPPORTED);
+            }
+            // If we got that far then getters and setters can be defined !!
+            if (owns(descriptor, "get")) {
+                defineGetter(object, property, descriptor.get);
+            }
+            if (owns(descriptor, "set")) {
+                defineSetter(object, property, descriptor.set);
+            }
+        }
+        return object;
+    };
+}
+
+// ES5 15.2.3.7
+// http://es5.github.com/#x15.2.3.7
+if (!Object.defineProperties || definePropertiesFallback) {
+    Object.defineProperties = function defineProperties(object, properties) {
+        // make a valiant attempt to use the real defineProperties
+        if (definePropertiesFallback) {
+            try {
+                return definePropertiesFallback.call(Object, object, properties);
+            } catch (exception) {
+                // try the shim if the real one doesn't work
+            }
+        }
+
+        for (var property in properties) {
+            if (owns(properties, property) && property !== "__proto__") {
+                Object.defineProperty(object, property, properties[property]);
+            }
+        }
+        return object;
+    };
+}
+
+// ES5 15.2.3.8
+// http://es5.github.com/#x15.2.3.8
+if (!Object.seal) {
+    Object.seal = function seal(object) {
+        // this is misleading and breaks feature-detection, but
+        // allows "securable" code to "gracefully" degrade to working
+        // but insecure code.
+        return object;
+    };
+}
+
+// ES5 15.2.3.9
+// http://es5.github.com/#x15.2.3.9
+if (!Object.freeze) {
+    Object.freeze = function freeze(object) {
+        // this is misleading and breaks feature-detection, but
+        // allows "securable" code to "gracefully" degrade to working
+        // but insecure code.
+        return object;
+    };
+}
+
+// detect a Rhino bug and patch it
+try {
+    Object.freeze(function () {});
+} catch (exception) {
+    Object.freeze = (function freeze(freezeObject) {
+        return function freeze(object) {
+            if (typeof object === "function") {
+                return object;
+            } else {
+                return freezeObject(object);
+            }
+        };
+    })(Object.freeze);
+}
+
+// ES5 15.2.3.10
+// http://es5.github.com/#x15.2.3.10
+if (!Object.preventExtensions) {
+    Object.preventExtensions = function preventExtensions(object) {
+        // this is misleading and breaks feature-detection, but
+        // allows "securable" code to "gracefully" degrade to working
+        // but insecure code.
+        return object;
+    };
+}
+
+// ES5 15.2.3.11
+// http://es5.github.com/#x15.2.3.11
+if (!Object.isSealed) {
+    Object.isSealed = function isSealed(object) {
+        return false;
+    };
+}
+
+// ES5 15.2.3.12
+// http://es5.github.com/#x15.2.3.12
+if (!Object.isFrozen) {
+    Object.isFrozen = function isFrozen(object) {
+        return false;
+    };
+}
+
+// ES5 15.2.3.13
+// http://es5.github.com/#x15.2.3.13
+if (!Object.isExtensible) {
+    Object.isExtensible = function isExtensible(object) {
+        // 1. If Type(O) is not Object throw a TypeError exception.
+        if (Object(object) !== object) {
+            throw new TypeError(); // TODO message
+        }
+        // 2. Return the Boolean value of the [[Extensible]] internal property of O.
+        var name = '';
+        while (owns(object, name)) {
+            name += '?';
+        }
+        object[name] = true;
+        var returnValue = owns(object, name);
+        delete object[name];
+        return returnValue;
+    };
+}
+
+}));
+
+
+  var nav = navigator.appName,
+      version = navigator.appVersion,
+      ie = (nav == 'Microsoft Internet Explorer');
+  if (ie) {
+    var match = navigator.userAgent.match(/MSIE ([0-9]{1,}[\.0-9]{0,})/);
+    version = match ? parseFloat(match[1]) : 0;
+  }
+
+  var aight = {
+    version: "2.0.1",
+    browser: {
+      name: nav,
+      ie:   ie ? version : false,
+      ie9:  ie && (version >= 9 && version <= 10),
+      ie8:  ie && (version >= 8 && version <= 9),
+      ie7:  ie && (version >= 7 && version <= 8),
+      ie6:  ie && (version >= 6 && version <= 7)
+    }
+  };
+
+  // exporting to globals doesn't work from within browserify
+  window.aight = aight;
+
+  // copy keys to the exports for browserify
+  Object.keys(aight).forEach(function(k) {
+    exports[k] = aight[k];
+  });
+
+
+  function aliasInterface(ns, expectedName, nonStandardName) {
+    if (ns[nonStandardName] && !ns[expectedName]) {
+      ns[expectedName] = ns[nonStandardName];
+      return true;
+    }
+    return false;
+  }
+
+  function shimPropertyAccessor(klass, property, shim) {
+    if (klass && !(property in klass.prototype)) {
+      return shim(klass.prototype, property);
+    }
+  }
+
+  aliasInterface(window, "HTMLCommentElement", "Comment");
+  aliasInterface(window, "HTMLDocument", "Document");
+
+  /*! (C) WebReflection Mit Style License */
+  // if (document.createEvent) return;
+  var
+    DUNNOABOUTDOMLOADED = true,
+    READYEVENTDISPATCHED = false,
+    ONREADYSTATECHANGE = 'onreadystatechange',
+    DOMCONTENTLOADED = 'DOMContentLoaded',
+    SECRET = '__IE8__' + Math.random(),
+    // Object = window.Object,
+    defineProperty = Object.defineProperty ||
+    // just in case ...
+    function (object, property, descriptor) {
+      object[property] = descriptor.value;
+    },
+    defineProperties = Object.defineProperties ||
+    // IE8 implemented defineProperty but not the plural...
+    function (object, descriptors) {
+      for(var key in descriptors) {
+        if (hasOwnProperty.call(descriptors, key)) {
+          try {
+            defineProperty(object, key, descriptors[key]);
+          } catch(o_O) {
+            if (window.console) {
+              console.log(key + ' failed on object:', object, o_O.message);
+            }
+          }
+        }
+      }
+    },
+    getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor,
+    hasOwnProperty = Object.prototype.hasOwnProperty,
+    // here IE7 will break like a charm
+    ElementPrototype = window.Element.prototype,
+    TextPrototype = window.Text.prototype,
+    // none of above native constructors exist/are exposed
+    possiblyNativeEvent = /^[a-z]+$/,
+    // ^ actually could probably be just /^[a-z]+$/
+    readyStateOK = /loaded|complete/,
+    types = {},
+    div = document.createElement('div')
+  ;
+
+  function commonEventLoop(currentTarget, e, $handlers, synthetic) {
+    for(var
+      continuePropagation,
+      handlers = $handlers.slice(),
+      evt = enrich(e, currentTarget),
+      i = 0, length = handlers.length; i < length; i++
+    ) {
+      handler = handlers[i];
+      if (
+        typeof handler === 'object' &&
+        typeof handler.handleEvent === 'function'
+      ) {
+        handler.handleEvent(evt);
+      } else {
+        handler.call(currentTarget, evt);
+      }
+      if (evt.stoppedImmediatePropagation) break;
+    }
+    continuePropagation = !evt.stoppedPropagation;
+    /*
+    if (continuePropagation && !synthetic && !live(currentTarget)) {
+      evt.cancelBubble = true;
+    }
+    */
+    return (
+      synthetic &&
+      continuePropagation &&
+      currentTarget.parentNode
+    ) ?
+      currentTarget.parentNode.dispatchEvent(evt) :
+      !evt.defaultPrevented
+    ;
+  }
+
+  function commonDescriptor(get, set) {
+    return {
+      // if you try with enumerable: true
+      // IE8 will miserably fail
+      configurable: true,
+      get: get,
+      set: set
+    };
+  }
+
+  function commonTextContent(protoDest, protoSource, property) {
+    var descriptor = getOwnPropertyDescriptor(
+      protoSource || protoDest, property
+    );
+
+    if (!descriptor) {
+      // console.warn("no fallback descriptor for ", protoDest, "#", property, " in ", protoSource);
+      return false;
+    }
+
+    defineProperty(
+      protoDest,
+      'textContent',
+      commonDescriptor(
+        function () {
+          return descriptor.get.call(this);
+        },
+        function (textContent) {
+          descriptor.set.call(this, textContent);
+        }
+      )
+    );
+  }
+
+  function enrich(e, currentTarget) {
+    e.currentTarget = currentTarget;
+    e.eventPhase = (
+      // AT_TARGET : BUBBLING_PHASE
+      e.target === e.currentTarget ? 2 : 3
+    );
+    return e;
+  }
+
+  function find(array, value) {
+    var i = array.length;
+    while(i-- && array[i] !== value);
+    return i;
+  }
+
+  function getTextContent() {
+    if (this.tagName === 'BR') return '\n';
+    var
+      textNode = this.firstChild,
+      arrayContent = []
+    ;
+    while(textNode) {
+      if (textNode.nodeType !== 8 && textNode.nodeType !== 7) {
+        arrayContent.push(textNode.textContent);
+      }
+      textNode = textNode.nextSibling;
+    }
+    return arrayContent.join('');
+  }
+
+  function live(self) {
+    return self.nodeType !== 9 && document.documentElement.contains(self);
+  }
+
+  function onReadyState(e) {
+    if (!READYEVENTDISPATCHED && readyStateOK.test(
+      document.readyState
+    )) {
+      READYEVENTDISPATCHED = !READYEVENTDISPATCHED;
+      document.detachEvent(ONREADYSTATECHANGE, onReadyState);
+      e = document.createEvent('Event');
+      e.initEvent(DOMCONTENTLOADED, true, true);
+      document.dispatchEvent(e);
+    }
+  }
+
+  function setTextContent(textContent) {
+    var node;
+    while ((node = this.lastChild)) {
+      this.removeChild(node);
+    }
+    if (textContent != null) {
+      this.appendChild(document.createTextNode(textContent));
+    }
+  }
+
+  function verify(self, e) {
+    if (!e) {
+      e = window.event;
+    }
+    if (!e.target) {
+      e.target = e.srcElement || e.fromElement || document;
+    }
+    if (!e.timeStamp) {
+      e.timeStamp = (new Date).getTime();
+    }
+    return e;
+  }
+
+  // normalized textContent for:
+  //  comment, script, style, text, title
+  commonTextContent(
+    window.HTMLCommentElement.prototype,
+    ElementPrototype,
+    'nodeValue'
+  );
+
+  commonTextContent(
+    window.HTMLScriptElement.prototype,
+    null,
+    'text'
+  );
+
+  commonTextContent(
+    TextPrototype,
+    null,
+    'nodeValue'
+  );
+
+  commonTextContent(
+    window.HTMLTitleElement.prototype,
+    null,
+    'text'
+  );
+
+  defineProperty(
+    window.HTMLStyleElement.prototype,
+    'textContent',
+    (function(descriptor){
+      return commonDescriptor(
+        function () {
+          return descriptor.get.call(this.styleSheet);
+        },
+        function (textContent) {
+          descriptor.set.call(this.styleSheet, textContent);
+        }
+      );
+    }(getOwnPropertyDescriptor(window.CSSStyleSheet.prototype, 'cssText')))
+  );
+
+  defineProperties(
+    ElementPrototype,
+    {
+      // bonus
+      textContent: {
+        get: getTextContent,
+        set: setTextContent
+      },
+      // http://www.w3.org/TR/ElementTraversal/#interface-elementTraversal
+      firstElementChild: {
+        get: function () {
+          for(var
+            childNodes = this.childNodes || [],
+            i = 0, length = childNodes.length;
+            i < length; i++
+          ) {
+            if (childNodes[i].nodeType == 1) return childNodes[i];
+          }
+        }
+      },
+      lastElementChild: {
+        get: function () {
+          for(var
+            childNodes = this.childNodes || [],
+            i = childNodes.length;
+            i--;
+          ) {
+            if (childNodes[i].nodeType == 1) return childNodes[i];
+          }
+        }
+      },
+      previousElementSibling: {
+        get: function () {
+          var previousElementSibling = this.previousSibling;
+          while (previousElementSibling && previousElementSibling.nodeType != 1) {
+            previousElementSibling = previousElementSibling.previousSibling;
+          }
+          return previousElementSibling;
+        }
+      },
+      nextElementSibling: {
+        get: function () {
+          var nextElementSibling = this.nextSibling;
+          while (nextElementSibling && nextElementSibling.nodeType != 1) {
+            nextElementSibling = nextElementSibling.nextSibling;
+          }
+          return nextElementSibling;
+        }
+      },
+      childElementCount: {
+        get: function () {
+          for(var
+            count = 0,
+            childNodes = this.childNodes || [],
+            i = childNodes.length; i--; count += childNodes[i].nodeType == 1
+          );
+          return count;
+        }
+      },
+      /*
+      // children would be an override
+      // IE8 already supports them but with comments too
+      // not just nodeType 1
+      children: {
+        get: function () {
+          for(var
+            children = [],
+            childNodes = this.childNodes || [],
+            i = 0, length = childNodes.length;
+            i < length; i++
+          ) {
+            if (childNodes[i].nodeType == 1) {
+              children.push(childNodes[i]);
+            }
+          }
+          return children;
+        }
+      },
+      */
+      // DOM Level 2 EventTarget methods and events
+      addEventListener: {value: function (type, handler, capture) {
+        var
+          self = this,
+          ontype = 'on' + type,
+          temple =  self[SECRET] ||
+                      defineProperty(
+                        self, SECRET, {value: {}}
+                      )[SECRET],
+          currentType = temple[ontype] || (temple[ontype] = {}),
+          handlers  = currentType.h || (currentType.h = []),
+          e
+        ;
+        if (!hasOwnProperty.call(currentType, 'w')) {
+          currentType.w = function (e) {
+            // e[SECRET] is a silent notification needed to avoid
+            // fired events during live test
+            return e[SECRET] || commonEventLoop(self, verify(self, e), handlers, false);
+          };
+          // if not detected yet
+          if (!hasOwnProperty.call(types, ontype)) {
+            // and potentially a native event
+            if(possiblyNativeEvent.test(type)) {
+              // do this heavy thing
+              try {
+                // TODO:  should I consider tagName too so that
+                //        INPUT[ontype] could be different ?
+                e = document.createEventObject();
+                // do not clone ever a node
+                // specially a document one ...
+                // use the secret to ignore them all
+                e[SECRET] = true;
+                // document a part if a node has never been
+                // added to any other node, fireEvent might
+                // behave very weirdly (read: trigger unspecified errors)
+                if (self.nodeType != 9 && self.parentNode == null) {
+                  div.appendChild(self);
+                }
+                self.fireEvent(ontype, e);
+                types[ontype] = true;
+              } catch(e) {
+                types[ontype] = false;
+                while (div.hasChildNodes()) {
+                  div.removeChild(div.firstChild);
+                }
+              }
+            } else {
+              // no need to bother since
+              // 'x-event' ain't native for sure
+              types[ontype] = false;
+            }
+          }
+          if (currentType.n = types[ontype]) {
+            self.attachEvent(ontype, currentType.w);
+          }
+        }
+        if (find(handlers, handler) < 0) {
+          handlers[capture ? 'unshift' : 'push'](handler);
+        }
+      }},
+      dispatchEvent: {value: function (e) {
+        var
+          self = this,
+          ontype = 'on' + e.type,
+          temple =  self[SECRET],
+          currentType = temple && temple[ontype],
+          valid = !!currentType,
+          parentNode
+        ;
+        if (!e.target) e.target = self;
+        return (valid ? (
+          currentType.n /* && live(self) */ ?
+            self.fireEvent(ontype, e) :
+            commonEventLoop(
+              self,
+              e,
+              currentType.h,
+              true
+            )
+        ) : (
+          (parentNode = self.parentNode) /* && live(self) */ ?
+            parentNode.dispatchEvent(e) :
+            true
+        )), !e.defaultPrevented;
+      }},
+      removeEventListener: {value: function (type, handler, capture) {
+        var
+          self = this,
+          ontype = 'on' + type,
+          temple =  self[SECRET],
+          currentType = temple && temple[ontype],
+          handlers = currentType && currentType.h,
+          i = handlers ? find(handlers, handler) : -1
+        ;
+        if (-1 < i) handlers.splice(i, 1);
+      }}
+    }
+  );
+
+  // EventTarget methods for Text nodes too
+  defineProperties(TextPrototype, {
+    addEventListener: {value: ElementPrototype.addEventListener},
+    dispatchEvent: {value: ElementPrototype.dispatchEvent},
+    removeEventListener: {value: ElementPrototype.removeEventListener}
+  });
+
+  defineProperties(
+    window.XMLHttpRequest.prototype,
+    {
+      addEventListener: {value: function (type, handler, capture) {
+        var
+          self = this,
+          ontype = 'on' + type,
+          temple =  self[SECRET] ||
+                      defineProperty(
+                        self, SECRET, {value: {}}
+                      )[SECRET],
+          currentType = temple[ontype] || (temple[ontype] = {}),
+          handlers  = currentType.h || (currentType.h = [])
+        ;
+        if (find(handlers, handler) < 0) {
+          if (!self[ontype]) {
+            self[ontype] = function () {
+              var e = document.createEvent('Event');
+              e.initEvent(type, true, true);
+              self.dispatchEvent(e);
+            };
+          }
+          handlers[capture ? 'unshift' : 'push'](handler);
+        }
+      }},
+      dispatchEvent: {value: function (e) {
+        var
+          self = this,
+          ontype = 'on' + e.type,
+          temple =  self[SECRET],
+          currentType = temple && temple[ontype],
+          valid = !!currentType
+        ;
+        return valid && (
+          currentType.n /* && live(self) */ ?
+            self.fireEvent(ontype, e) :
+            commonEventLoop(
+              self,
+              e,
+              currentType.h,
+              true
+            )
+        );
+      }},
+      removeEventListener: {value: ElementPrototype.removeEventListener}
+    }
+  );
+
+  defineProperties(
+    window.Event.prototype,
+    {
+      bubbles: {value: true, writable: true},
+      cancelable: {value: true, writable: true},
+      preventDefault: {value: function () {
+        if (this.cancelable) {
+          this.defaultPrevented = true;
+          this.returnValue = false;
+        }
+      }},
+      stopPropagation: {value: function () {
+        this.stoppedPropagation = true;
+        this.cancelBubble = true;
+      }},
+      stopImmediatePropagation: {value: function () {
+        this.stoppedImmediatePropagation = true;
+        this.stopPropagation();
+      }},
+      initEvent: {value: function(type, bubbles, cancelable){
+        this.type = type;
+        this.bubbles = !!bubbles;
+        this.cancelable = !!cancelable;
+        if (!this.bubbles) {
+          this.stopPropagation();
+        }
+      }}
+    }
+  );
+
+  defineProperties(
+    window.HTMLDocument.prototype,
+    {
+      textContent: {
+        get: function () {
+          return this.nodeType === 11 ? getTextContent.call(this) : null;
+        },
+        set: function (textContent) {
+          if (this.nodeType === 11) {
+            setTextContent.call(this, textContent);
+          }
+        }
+      },
+      addEventListener: {value: function(type, handler, capture) {
+        var self = this;
+        ElementPrototype.addEventListener.call(self, type, handler, capture);
+        // NOTE:  it won't fire if already loaded, this is NOT a $.ready() shim!
+        //        this behaves just like standard browsers
+        if (
+          DUNNOABOUTDOMLOADED &&
+          type === DOMCONTENTLOADED &&
+          !readyStateOK.test(
+            self.readyState
+          )
+        ) {
+          DUNNOABOUTDOMLOADED = false;
+          self.attachEvent(ONREADYSTATECHANGE, onReadyState);
+          if (window == top) {
+            (function gonna(e){try{
+              self.documentElement.doScroll('left');
+              onReadyState();
+              }catch(o_O){
+              setTimeout(gonna, 50);
+            }}());
+          }
+        }
+      }},
+      dispatchEvent: {value: ElementPrototype.dispatchEvent},
+      removeEventListener: {value: ElementPrototype.removeEventListener},
+      createEvent: {value: function(Class){
+        var e;
+        if (Class !== 'Event') throw new Error('unsupported ' + Class);
+        e = document.createEventObject();
+        e.timeStamp = (new Date).getTime();
+        return e;
+      }}
+    }
+  );
+
+  defineProperties(
+    window.Window.prototype,
+    {
+      getComputedStyle: {value: function(){
+
+        var // partially grabbed from jQuery and Dean's hack
+          notpixel = /^(?:[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|))(?!px)[a-z%]+$/,
+          position = /^(top|right|bottom|left)$/,
+          re = /\-([a-z])/g,
+          place = function (match, $1) {
+            return $1.toUpperCase();
+          }
+        ;
+
+        function ComputedStyle(_) {
+          this._ = _;
+        }
+
+        ComputedStyle.prototype.getPropertyValue = function (name) {
+          var
+            el = this._,
+            style = el.style,
+            currentStyle = el.currentStyle,
+            runtimeStyle = el.runtimeStyle,
+            result,
+            left,
+            rtLeft
+          ;
+          name = (name === 'float' ? 'style-float' : name).replace(re, place);
+          result = currentStyle ? currentStyle[name] : style[name];
+          if (notpixel.test(result) && !position.test(name)) {
+            left = style.left;
+            rtLeft = runtimeStyle && runtimeStyle.left;
+            if (rtLeft) {
+              runtimeStyle.left = currentStyle.left;
+            }
+            style.left = name === 'fontSize' ? '1em' : result;
+            result = style.pixelLeft + 'px';
+            style.left = left;
+            if (rtLeft) {
+              runtimeStyle.left = rtLeft;
+            }
+          }
+          return result == null ?
+            result : ((result + '') || 'auto');
+        };
+
+        // unsupported
+        function PseudoComputedStyle() {}
+        PseudoComputedStyle.prototype.getPropertyValue = function () {
+          return null;
+        };
+
+        return function (el, pseudo) {
+          return pseudo ?
+            new PseudoComputedStyle(el) :
+            new ComputedStyle(el);
+        };
+
+      }()},
+
+      addEventListener: {value: function (type, handler, capture) {
+        var
+          self = window,
+          ontype = 'on' + type,
+          handlers
+        ;
+        if (!self[ontype]) {
+          self[ontype] = function(e) {
+            return commonEventLoop(self, verify(self, e), handlers, false);
+          };
+        }
+        handlers = self[ontype][SECRET] || (
+          self[ontype][SECRET] = []
+        );
+        if (find(handlers, handler) < 0) {
+          handlers[capture ? 'unshift' : 'push'](handler);
+        }
+      }},
+      dispatchEvent: {value: function (e) {
+        var method = window['on' + e.type];
+        return method ? method.call(window, e) !== false && !e.defaultPrevented : true;
+      }},
+      removeEventListener: {value: function (type, handler, capture) {
+        var
+          ontype = 'on' + type,
+          handlers = (window[ontype] || Object)[SECRET],
+          i = handlers ? find(handlers, handler) : -1
+         ;
+        if (-1 < i) handlers.splice(i, 1);
+      }}
+    }
+  );
+(function(window){'use strict';
+  /* jshint loopfunc: true, noempty: false*/
+  // http://www.w3.org/TR/dom/#element
+  function textNodeIfString(node) {
+    return typeof node === 'string' ? window.document.createTextNode(node) : node;
+  }
+  function mutationMacro(nodes) {
+    if (nodes.length === 1) {
+      return textNodeIfString(nodes[0]);
+    }
+    for (var
+      fragment = window.document.createDocumentFragment(),
+      list = slice.call(nodes),
+      i = 0; i < nodes.length; i++
+    ) {
+      fragment.appendChild(textNodeIfString(list[i]));
+    }
+    return fragment;
+  }
+  for(var
+    defineProperty = Object.defineProperty || function (object, property, descriptor) {
+      object.__defineGetter__(property, descriptor.get);
+    },
+    indexOf = [].indexOf || function indexOf(value){
+      var length = this.length;
+      while(length--) {
+        if (this[length] === value) {
+          break;
+        }
+      }
+      return length;
+    },
+    head,
+    property,
+    verifyToken,
+    DOMTokenList,
+    trim = /^\s+|\s+$/g,
+    spaces = /\s+/,
+    SPACE = '\x20',
+    toggle = function toggle(token, force) {
+      if (this.contains(token)) {
+        if (!force) {
+          // force is not true (either false or omitted)
+          this.remove(token);
+        }
+      } else if(force === undefined || force) {
+        force = true;
+        this.add(token);
+      }
+      return !!force;
+    },
+    ElementPrototype = (window.Element || window.Node || window.HTMLElement).prototype,
+    properties = [
+      'matches', (
+        ElementPrototype.matchesSelector ||
+        ElementPrototype.webkitMatchesSelector ||
+        ElementPrototype.khtmlMatchesSelector ||
+        ElementPrototype.mozMatchesSelector ||
+        ElementPrototype.msMatchesSelector ||
+        ElementPrototype.oMatchesSelector ||
+        function matches(selector) {
+          var parentNode = this.parentNode;
+          return !!parentNode && -1 < indexOf.call(
+            parentNode.querySelectorAll(selector),
+            this
+          );
+        }
+      ),
+      'closest', function closest(selector) {
+        var parentNode = this, matches;
+        while (
+          // document has no .matches
+          (matches = parentNode && parentNode.matches) &&
+          !parentNode.matches(selector)
+        ) {
+          parentNode = parentNode.parentNode;
+        }
+        return matches ? parentNode : null;
+      },
+      'prepend', function prepend() {
+        var firstChild = this.firstChild,
+            node = mutationMacro(arguments);
+        if (firstChild) {
+          this.insertBefore(node, firstChild);
+        } else {
+          this.appendChild(node);
+        }
+      },
+      'append', function append() {
+        this.appendChild(mutationMacro(arguments));
+      },
+      'before', function before() {
+        var parentNode = this.parentNode;
+        if (parentNode) {
+          parentNode.insertBefore(
+            mutationMacro(arguments), this
+          );
+        }
+      },
+      'after', function after() {
+        var parentNode = this.parentNode,
+            nextSibling = this.nextSibling,
+            node = mutationMacro(arguments);
+        if (parentNode) {
+          if (nextSibling) {
+            parentNode.insertBefore(node, nextSibling);
+          } else {
+            parentNode.appendChild(node);
+          }
+        }
+      },
+      // WARNING - DEPRECATED - use .replaceWith() instead
+      'replace', function replace() {
+        var parentNode = this.parentNode;
+        if (parentNode) {
+          parentNode.replaceChild(
+            mutationMacro(arguments),
+            this
+          );
+        }
+      },
+      'replaceWith', function replaceWith() {
+        var parentNode = this.parentNode,
+            comment;
+        if (parentNode) {
+          // if a node is replaced with a list of nodes
+          // that includes the node itself
+          // we need to be able to remove it from its current position
+          // and replace its position with the new list
+          // a comment would play nice here thanks to its ability
+          // to be, CSS and repaint speaking, ignored
+          comment = window.document.createComment('');
+          parentNode.insertBefore(comment, this);
+          parentNode.removeChild(this);
+          parentNode.replaceChild(mutationMacro(arguments), comment);
+        }
+      },
+      'remove', function remove() {
+        var parentNode = this.parentNode;
+        if (parentNode) {
+          parentNode.removeChild(this);
+        }
+      }
+    ],
+    slice = properties.slice,
+    i = properties.length; i; i -= 2
+  ) {
+    property = properties[i - 2];
+    if (!(property in ElementPrototype)) {
+      ElementPrototype[property] = properties[i - 1];
+    }
+  }
+  // most likely an IE9 only issue
+  // see https://github.com/WebReflection/dom4/issues/6
+  if (!document.createElement('a').matches('a')) {
+    ElementPrototype[property] = function(matches){
+      return function (selector) {
+        return matches.call(
+          this.parentNode ?
+            this :
+            document.createDocumentFragment().appendChild(this),
+          selector
+        );
+      };
+    }(ElementPrototype[property]);
+  }
+  // http://www.w3.org/TR/dom/#domtokenlist
+  // iOS 5.1 has completely screwed this property
+  // classList in ElementPrototype is false
+  // but it's actually there as getter
+  if (!('classList' in document.documentElement)) {
+    // http://www.w3.org/TR/domcore/#domtokenlist
+    verifyToken = function (token) {
+      if (!token) {
+        throw 'SyntaxError';
+      } else if (spaces.test(token)) {
+        throw 'InvalidCharacterError';
+      }
+      return token;
+    };
+    DOMTokenList = function (node) {
+      var className = node.className.replace(trim, '');
+      if (className.length) {
+        properties.push.apply(
+          this,
+          className.split(spaces)
+        );
+      }
+      this._ = node;
+    };
+    DOMTokenList.prototype = {
+      length: 0,
+      add: function add() {
+        for(var j = 0, token; j < arguments.length; j++) {
+          token = arguments[j];
+          if(!this.contains(token)) {
+            properties.push.call(this, property);
+          }
+        }
+        this._.className = '' + this;
+      },
+      contains: (function(indexOf){
+        return function contains(token) {
+          i = indexOf.call(this, property = verifyToken(token));
+          return -1 < i;
+        };
+      }([].indexOf || function (token) {
+        i = this.length;
+        while(i-- && this[i] !== token){}
+        return i;
+      })),
+      item: function item(i) {
+        return this[i] || null;
+      },
+      remove: function remove() {
+        for(var j = 0, token; j < arguments.length; j++) {
+          token = arguments[j];
+          if(this.contains(token)) {
+            properties.splice.call(this, i, 1);
+          }
+        }
+        this._.className = '' + this;
+      },
+      toggle: toggle,
+      toString: function toString() {
+        return properties.join.call(this, SPACE);
+      }
+    };
+    defineProperty(ElementPrototype, 'classList', {
+      get: function get() {
+        return new DOMTokenList(this);
+      },
+      set: function(){}
+    });
+  } else {
+    // iOS 5.1 and Nokia ASHA do not support multiple add or remove
+    // trying to detect and fix that in here
+    DOMTokenList = document.createElement('div').classList;
+    DOMTokenList.add('a', 'b', 'a');
+    if ('a\x20b' != DOMTokenList) {
+      // no other way to reach original methods in iOS 5.1
+      ElementPrototype = DOMTokenList.constructor.prototype;
+      if (!('add' in ElementPrototype)) {
+        // ASHA double fails in here
+        ElementPrototype = window.DOMTokenList.prototype;
+      }
+      verifyToken = function (original) {
+        return function () {
+          var i = 0;
+          while (i < arguments.length) {
+            original.call(this, arguments[i++]);
+          }
+        };
+      };
+      ElementPrototype.add = verifyToken(ElementPrototype.add);
+      ElementPrototype.remove = verifyToken(ElementPrototype.remove);
+      // toggle is broken too ^_^ ... let's fix it
+      ElementPrototype.toggle = toggle;
+    }
+  }
+
+  if (!('head' in document)) {
+    defineProperty(document, 'head', {
+      get: function () {
+        return head || (
+          head = document.getElementsByTagName('head')[0]
+        );
+      }
+    });
+  }
+
+  // http://www.w3.org/TR/dom/#customevent
+  try{new window.CustomEvent('?');}catch(o_O){
+    window.CustomEvent = function(
+      eventName,
+      defaultInitDict
+    ){
+
+      // the infamous substitute
+      function CustomEvent(type, eventInitDict) {
+        /*jshint eqnull:true */
+        var event = document.createEvent(eventName);
+        if (typeof type != 'string') {
+          throw new Error('An event name must be provided');
+        }
+        if (eventName == 'Event') {
+          event.initCustomEvent = initCustomEvent;
+        }
+        if (eventInitDict == null) {
+          eventInitDict = defaultInitDict;
+        }
+        event.initCustomEvent(
+          type,
+          eventInitDict.bubbles,
+          eventInitDict.cancelable,
+          eventInitDict.detail
+        );
+        return event;
+      }
+
+      // attached at runtime
+      function initCustomEvent(
+        type, bubbles, cancelable, detail
+      ) {
+        /*jshint validthis:true*/
+        this.initEvent(type, bubbles, cancelable);
+        this.detail = detail;
+      }
+
+      // that's it
+      return CustomEvent;
+    }(
+      // is this IE9 or IE10 ?
+      // where CustomEvent is there
+      // but not usable as construtor ?
+      window.CustomEvent ?
+        // use the CustomEvent interface in such case
+        'CustomEvent' : 'Event',
+        // otherwise the common compatible one
+      {
+        bubbles: false,
+        cancelable: false,
+        detail: null
+      }
+    );
+  }
+
+}(window));/**
+* @preserve HTML5 Shiv 3.7.2 | @afarkas @jdalton @jon_neal @rem | MIT/GPL2 Licensed
+*/
+;(function(window, document) {
+/*jshint evil:true */
+  /** version */
+  var version = '3.7.2';
+
+  /** Preset options */
+  var options = window.html5 || {};
+
+  /** Used to skip problem elements */
+  var reSkip = /^<|^(?:button|map|select|textarea|object|iframe|option|optgroup)$/i;
+
+  /** Not all elements can be cloned in IE **/
+  var saveClones = /^(?:a|b|code|div|fieldset|h1|h2|h3|h4|h5|h6|i|label|li|ol|p|q|span|strong|style|table|tbody|td|th|tr|ul)$/i;
+
+  /** Detect whether the browser supports default html5 styles */
+  var supportsHtml5Styles;
+
+  /** Name of the expando, to work with multiple documents or to re-shiv one document */
+  var expando = '_html5shiv';
+
+  /** The id for the the documents expando */
+  var expanID = 0;
+
+  /** Cached data for each document */
+  var expandoData = {};
+
+  /** Detect whether the browser supports unknown elements */
+  var supportsUnknownElements;
+
+  (function() {
+    try {
+        var a = document.createElement('a');
+        a.innerHTML = '<xyz></xyz>';
+        //if the hidden property is implemented we can assume, that the browser supports basic HTML5 Styles
+        supportsHtml5Styles = ('hidden' in a);
+
+        supportsUnknownElements = a.childNodes.length == 1 || (function() {
+          // assign a false positive if unable to shiv
+          (document.createElement)('a');
+          var frag = document.createDocumentFragment();
+          return (
+            typeof frag.cloneNode == 'undefined' ||
+            typeof frag.createDocumentFragment == 'undefined' ||
+            typeof frag.createElement == 'undefined'
+          );
+        }());
+    } catch(e) {
+      // assign a false positive if detection fails => unable to shiv
+      supportsHtml5Styles = true;
+      supportsUnknownElements = true;
+    }
+
+  }());
+
+  /*--------------------------------------------------------------------------*/
+
+  /**
+   * Creates a style sheet with the given CSS text and adds it to the document.
+   * @private
+   * @param {Document} ownerDocument The document.
+   * @param {String} cssText The CSS text.
+   * @returns {StyleSheet} The style element.
+   */
+  function addStyleSheet(ownerDocument, cssText) {
+    var p = ownerDocument.createElement('p'),
+        parent = ownerDocument.getElementsByTagName('head')[0] || ownerDocument.documentElement;
+
+    p.innerHTML = 'x<style>' + cssText + '</style>';
+    return parent.insertBefore(p.lastChild, parent.firstChild);
+  }
+
+  /**
+   * Returns the value of `html5.elements` as an array.
+   * @private
+   * @returns {Array} An array of shived element node names.
+   */
+  function getElements() {
+    var elements = html5.elements;
+    return typeof elements == 'string' ? elements.split(' ') : elements;
+  }
+
+  /**
+   * Extends the built-in list of html5 elements
+   * @memberOf html5
+   * @param {String|Array} newElements whitespace separated list or array of new element names to shiv
+   * @param {Document} ownerDocument The context document.
+   */
+  function addElements(newElements, ownerDocument) {
+    var elements = html5.elements;
+    if(typeof elements != 'string'){
+      elements = elements.join(' ');
+    }
+    if(typeof newElements != 'string'){
+      newElements = newElements.join(' ');
+    }
+    html5.elements = elements +' '+ newElements;
+    shivDocument(ownerDocument);
+  }
+
+   /**
+   * Returns the data associated to the given document
+   * @private
+   * @param {Document} ownerDocument The document.
+   * @returns {Object} An object of data.
+   */
+  function getExpandoData(ownerDocument) {
+    var data = expandoData[ownerDocument[expando]];
+    if (!data) {
+        data = {};
+        expanID++;
+        ownerDocument[expando] = expanID;
+        expandoData[expanID] = data;
+    }
+    return data;
+  }
+
+  /**
+   * returns a shived element for the given nodeName and document
+   * @memberOf html5
+   * @param {String} nodeName name of the element
+   * @param {Document} ownerDocument The context document.
+   * @returns {Object} The shived element.
+   */
+  function createElement(nodeName, ownerDocument, data){
+    if (!ownerDocument) {
+        ownerDocument = document;
+    }
+    if(supportsUnknownElements){
+        return ownerDocument.createElement(nodeName);
+    }
+    if (!data) {
+        data = getExpandoData(ownerDocument);
+    }
+    var node;
+
+    if (data.cache[nodeName]) {
+        node = data.cache[nodeName].cloneNode();
+    } else if (saveClones.test(nodeName)) {
+        node = (data.cache[nodeName] = data.createElem(nodeName)).cloneNode();
+    } else {
+        node = data.createElem(nodeName);
+    }
+
+    // Avoid adding some elements to fragments in IE < 9 because
+    // * Attributes like `name` or `type` cannot be set/changed once an element
+    //   is inserted into a document/fragment
+    // * Link elements with `src` attributes that are inaccessible, as with
+    //   a 403 response, will cause the tab/window to crash
+    // * Script elements appended to fragments will execute when their `src`
+    //   or `text` property is set
+    return node.canHaveChildren && !reSkip.test(nodeName) && !node.tagUrn ? data.frag.appendChild(node) : node;
+  }
+
+  /**
+   * returns a shived DocumentFragment for the given document
+   * @memberOf html5
+   * @param {Document} ownerDocument The context document.
+   * @returns {Object} The shived DocumentFragment.
+   */
+  function createDocumentFragment(ownerDocument, data){
+    if (!ownerDocument) {
+        ownerDocument = document;
+    }
+    if(supportsUnknownElements){
+        return ownerDocument.createDocumentFragment();
+    }
+    data = data || getExpandoData(ownerDocument);
+    var clone = data.frag.cloneNode(),
+        i = 0,
+        elems = getElements(),
+        l = elems.length;
+    for(;i<l;i++){
+        clone.createElement(elems[i]);
+    }
+    return clone;
+  }
+
+  /**
+   * Shivs the `createElement` and `createDocumentFragment` methods of the document.
+   * @private
+   * @param {Document|DocumentFragment} ownerDocument The document.
+   * @param {Object} data of the document.
+   */
+  function shivMethods(ownerDocument, data) {
+    if (!data.cache) {
+        data.cache = {};
+        data.createElem = ownerDocument.createElement;
+        data.createFrag = ownerDocument.createDocumentFragment;
+        data.frag = data.createFrag();
+    }
+
+
+    ownerDocument.createElement = function(nodeName) {
+      //abort shiv
+      if (!html5.shivMethods) {
+          return data.createElem(nodeName);
+      }
+      return createElement(nodeName, ownerDocument, data);
+    };
+
+    ownerDocument.createDocumentFragment = Function('h,f', 'return function(){' +
+      'var n=f.cloneNode(),c=n.createElement;' +
+      'h.shivMethods&&(' +
+        // unroll the `createElement` calls
+        getElements().join().replace(/[\w\-:]+/g, function(nodeName) {
+          data.createElem(nodeName);
+          data.frag.createElement(nodeName);
+          return 'c("' + nodeName + '")';
+        }) +
+      ');return n}'
+    )(html5, data.frag);
+  }
+
+  /*--------------------------------------------------------------------------*/
+
+  /**
+   * Shivs the given document.
+   * @memberOf html5
+   * @param {Document} ownerDocument The document to shiv.
+   * @returns {Document} The shived document.
+   */
+  function shivDocument(ownerDocument) {
+    if (!ownerDocument) {
+        ownerDocument = document;
+    }
+    var data = getExpandoData(ownerDocument);
+
+    if (html5.shivCSS && !supportsHtml5Styles && !data.hasCSS) {
+      data.hasCSS = !!addStyleSheet(ownerDocument,
+        // corrects block display not defined in IE6/7/8/9
+        'article,aside,dialog,figcaption,figure,footer,header,hgroup,main,nav,section{display:block}' +
+        // adds styling not present in IE6/7/8/9
+        'mark{background:#FF0;color:#000}' +
+        // hides non-rendered elements
+        'template{display:none}'
+      );
+    }
+    if (!supportsUnknownElements) {
+      shivMethods(ownerDocument, data);
+    }
+    return ownerDocument;
+  }
+
+  /*--------------------------------------------------------------------------*/
+
+  /**
+   * The `html5` object is exposed so that more elements can be shived and
+   * existing shiving can be detected on iframes.
+   * @type Object
+   * @example
+   *
+   * // options can be changed before the script is included
+   * html5 = { 'elements': 'mark section', 'shivCSS': false, 'shivMethods': false };
+   */
+  var html5 = {
+
+    /**
+     * An array or space separated string of node names of the elements to shiv.
+     * @memberOf html5
+     * @type Array|String
+     */
+    'elements': options.elements || 'abbr article aside audio bdi canvas data datalist details dialog figcaption figure footer header hgroup main mark meter nav output picture progress section summary template time video',
+
+    /**
+     * current version of html5shiv
+     */
+    'version': version,
+
+    /**
+     * A flag to indicate that the HTML5 style sheet should be inserted.
+     * @memberOf html5
+     * @type Boolean
+     */
+    'shivCSS': (options.shivCSS !== false),
+
+    /**
+     * Is equal to true if a browser supports creating unknown/HTML5 elements
+     * @memberOf html5
+     * @type boolean
+     */
+    'supportsUnknownElements': supportsUnknownElements,
+
+    /**
+     * A flag to indicate that the document's `createElement` and `createDocumentFragment`
+     * methods should be overwritten.
+     * @memberOf html5
+     * @type Boolean
+     */
+    'shivMethods': (options.shivMethods !== false),
+
+    /**
+     * A string to describe the type of `html5` object ("default" or "default print").
+     * @memberOf html5
+     * @type String
+     */
+    'type': 'default',
+
+    // shivs the document according to the specified `html5` object options
+    'shivDocument': shivDocument,
+
+    //creates a shived element
+    createElement: createElement,
+
+    //creates a shived documentFragment
+    createDocumentFragment: createDocumentFragment,
+
+    //extends list of elements
+    addElements: addElements
+  };
+
+  /*--------------------------------------------------------------------------*/
+
+  // expose html5
+  window.html5 = html5;
+
+  // shiv the document
+  shivDocument(document);
+
+}(this, document));
 /* CSS Object Model patches */
 (function(CSSSDProto) {
 
@@ -2283,4 +3243,12 @@ if (!('createElementNS' in HTMLDocument.prototype)) {
   }
 
 })(CSSStyleDeclaration.prototype);
-})(this);
+if (!('createElementNS' in document)) {
+  var DocumentPrototype = window.HTMLDocument.prototype;
+  DocumentPrototype.createElementNS = function(ns, name) {
+    if (ns) throw new Error("sorry, this browser does not support namespaces");
+    return DocumentPrototype.createElement.call(this, name);
+  };
+}
+
+}).call(this, typeof module === "object" ? module.exports : this);
