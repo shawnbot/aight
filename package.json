@@ -27,10 +27,13 @@
   "keywords": [
     "js",
     "dom",
+    "es5",
+    "css",
     "ie",
     "ie8",
     "ie9",
     "windows",
+    "browser",
     "compatibility"
   ],
   "author": "Shawn Allen <shawn.allen@hush.com>",
