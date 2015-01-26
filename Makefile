@@ -3,7 +3,9 @@ JS_FILES = \
 	lib/es5-shim/es5-shim.js \
 	lib/es5-shim/es5-sham.js \
 	src/aight.js \
+	src/before-ie8.js \
 	lib/ie8/src/ie8.js \
+	src/after-ie8.js \
 	lib/dom4/src/dom4.js \
 	lib/html5shiv/src/html5shiv.js \
 	src/css-om.js \

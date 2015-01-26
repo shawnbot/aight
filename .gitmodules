@@ -1,7 +1,6 @@
 [submodule "lib/ie8"]
 	path = lib/ie8
 	url = git@github.com:shawnbot/ie8.git
-	branch = ie9
 [submodule "lib/dom4"]
 	path = lib/dom4
 	url = git@github.com:shawnbot/dom4.git
