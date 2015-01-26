@@ -1951,6 +1951,7 @@ if (!Object.isExtensible) {
 
   aliasInterface(window, "HTMLCommentElement", "Comment");
   aliasInterface(window, "HTMLDocument", "Document");
+if (aight.browser.ie < 9) {
 
   /*! (C) WebReflection Mit Style License */
   // if (document.createEvent) return;
@@ -2577,6 +2578,7 @@ if (!Object.isExtensible) {
       }}
     }
   );
+} // if (aight.browser.ie < 9)
 (function(window){'use strict';
   /* jshint loopfunc: true, noempty: false*/
   // http://www.w3.org/TR/dom/#element
