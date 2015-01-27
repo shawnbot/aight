@@ -851,8 +851,10 @@ if (aight.browser.ie < 9) {
       return token;
     };
     DOMTokenList = function (node) {
-      var className = node.className.replace(trim, '');
-      if (className.length) {
+      var className = (typeof node.className === "object"
+            ? node.className.baseVal
+            : node.className).replace(trim, '');
+      if (className) {
         properties.push.apply(
           this,
           className.split(spaces)
@@ -997,7 +999,8 @@ if (aight.browser.ie < 9) {
     );
   }
 
-}(window));/* CSS Object Model patches */
+}(window));
+/* CSS Object Model patches */
 (function(CSSSDProto) {
 
   // patch CSSStyleDeclaration.prototype using IE8's methods
