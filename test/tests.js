@@ -4,7 +4,8 @@ if (typeof require === "function") {
 }
 
 var module = QUnit.module,
-    test = QUnit.test;
+    test = QUnit.test,
+    SVG_NS = "http://www.w3.org/2000/svg";
 
 module("ES5");
 (function() {
@@ -135,14 +136,25 @@ module("CSS");
     var node = document.createElement("div");
     assert.ok(node.classList, "element has classList property");
     node.classList.add("foo");
-    assert.ok(node.classList.contains("foo"), "classList.add('foo') does not produce 'foo' in classList");
-    assert.equal(node.className, "foo", "classList.add('foo') does not produce 'foo' in classList");
+    assert.ok(node.classList.contains("foo"), "classList.add() works");
+    assert.equal(node.className, "foo", "className contians class added via classList.add()");
     node.className = "bar baz";
-    assert.equal(node.classList.contains("foo"), false, "setting className does not update classList");
-    assert.equal(node.classList.contains("bar"), true, "className = 'bar baz' -> !classList.contains('bar')");
-    assert.equal(node.classList.contains("baz"), true, "className = 'bar baz' -> !classList.contains('bar')");
+    assert.equal(node.classList.contains("foo"), false, "setting className affects classList");
+    assert.equal(node.classList.contains("bar"), true);
+    assert.equal(node.classList.contains("baz"), true);
     node.classList.add("foo");
-    assert.equal(node.classList.contains("foo"), true, "classList.append('foo') doesn't work");
+    assert.equal(node.classList.contains("foo"), true, "classList.add() works after setting className");
+
+    // SVG-specific classList shim tests, per
+    // <https://github.com/WebReflection/dom4/issues/10>
+    if (aight.browser.ie9) {
+      var svg = document.createElementNS(SVG_NS, "svg");
+      assert.ok(svg.classList, "SVG elements have a classList member");
+      assert.equal(svg.classList.contains("foo"), false, "classList.contains() returns false for new SVG element");
+      svg.classList.add("foo");
+      assert.equal(svg.className.baseVal, "foo", "className.baseVal is set by classList.add()");
+      assert.equal(svg.classList.contains("foo"), true, "classList.contains() works for SVG elements");
+    }
   });
 
   test("window.getComputedStyle()", function(assert) {
