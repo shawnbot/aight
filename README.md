@@ -26,8 +26,8 @@ and other libraries that rely on them. It includes:
 * A shim for [document.createElementNS()](http://www.w3.org/TR/DOM-Level-2-Core/core.html#ID-DocCrElNS),
   which throws an error if you pass it an actual namespace (which IE8 doesn't
   support). This merely provides a facade of interoperability with D3, which
-  calls createElementNS() even in cases where the parent's namespaceURI is
-  undefined (as is the case in HTML5, but *not* XHTML).
+  calls `document.createElementNS()` even in cases where the parent's
+  namespaceURI is undefined (as is the case in HTML5, but *not* XHTML).
 
 * [html5shiv](https://github.com/aFarkas/html5shiv/), which monkeypatches IE6-8
   to enable manipulation of HTML5 elements in the DOM and applies basic styling
