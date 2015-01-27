@@ -15,9 +15,10 @@
     "zuul": "^1.16.5"
   },
   "scripts": {
+    "build":      "make clean all",
     "test":       "zuul -- test/tests.js",
     "test:local": "zuul --local 8080 -- test/tests.js",
-    "watch":      "watchy -w lib,src,Makefile -- make clean all",
+    "watch":      "watchy -w lib,src,Makefile -- npm run build",
     "watch:test": "watchy -w *.js,test -- npm run test:local"
   },
   "repository": {
