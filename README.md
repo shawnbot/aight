@@ -70,7 +70,7 @@ Bringing it all together, you end up with:
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <!--[if lte IE 9]>
-    <script type="text/javascript" src="aight.min.js"></script>
+    <script src="aight.min.js"></script>
     <![endif]-->
   </head>
   <body>
