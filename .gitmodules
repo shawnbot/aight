@@ -1,12 +1,12 @@
 [submodule "lib/ie8"]
 	path = lib/ie8
-	url = git@github.com:shawnbot/ie8.git
+	url = https://github.com/shawnbot/ie8.git
 [submodule "lib/dom4"]
 	path = lib/dom4
-	url = git@github.com:shawnbot/dom4.git
+	url = https://github.com/shawnbot/dom4.git
 [submodule "lib/es5-shim"]
 	path = lib/es5-shim
-	url = git@github.com:es-shims/es5-shim.git
+	url = https://github.com/es-shims/es5-shim.git
 [submodule "lib/html5shiv"]
 	path = lib/html5shiv
 	url = https://github.com/aFarkas/html5shiv.git
