@@ -1,6 +1,6 @@
 // zuul browserifies aight.js, so we need to do this:
-if (typeof require === "function" && !window.aight) {
-  aight = require("../aight");
+if (typeof require === "function") {
+  require("../aight");
 }
 
 var module = QUnit.module,
