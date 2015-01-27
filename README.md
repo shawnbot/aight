@@ -53,7 +53,7 @@ You have some options:
 1. Install with [bower](http://bower.io/):
     ```sh
     bower init # if you haven't already
-    bower install aight
+    bower install aight#~2.0
     # then copy it from the bower_components directory
     cp bower_components/aight/aight*.js path/to/js
     ```
