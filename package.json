@@ -1,6 +1,6 @@
 {
   "name": "aight",
-  "version": "2.0.0a",
+  "version": "2.0.1a",
   "description": "un-suck DOM and CSS APIs in old IE",
   "main": "aight.js",
   "directories": {
