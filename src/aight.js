@@ -1,4 +1,6 @@
 
+  aight.version = "2.0.4";
+
   var nav = null,
       version = 0,
       ie = false;
@@ -12,7 +14,6 @@
     }
   }
 
-  aight.version = "2.0.3a";
   aight.browser = {
     name: nav,
     ie:   ie ? version : false,
