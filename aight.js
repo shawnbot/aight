@@ -783,28 +783,15 @@ if (aight.browser.ie < 9) {
       },
       // WARNING - DEPRECATED - use .replaceWith() instead
       'replace', function replace() {
+        this.replaceWith.apply(this, arguments);
+      },
+      'replaceWith', function replaceWith() {
         var parentNode = this.parentNode;
         if (parentNode) {
           parentNode.replaceChild(
             mutationMacro(arguments),
             this
           );
-        }
-      },
-      'replaceWith', function replaceWith() {
-        var parentNode = this.parentNode,
-            comment;
-        if (parentNode) {
-          // if a node is replaced with a list of nodes
-          // that includes the node itself
-          // we need to be able to remove it from its current position
-          // and replace its position with the new list
-          // a comment would play nice here thanks to its ability
-          // to be, CSS and repaint speaking, ignored
-          comment = window.document.createComment('');
-          parentNode.insertBefore(comment, this);
-          parentNode.removeChild(this);
-          parentNode.replaceChild(mutationMacro(arguments), comment);
         }
       },
       'remove', function remove() {
@@ -851,7 +838,8 @@ if (aight.browser.ie < 9) {
       return token;
     };
     DOMTokenList = function (node) {
-      var className = (typeof node.className === "object"
+      this._svg = typeof node.className === "object";
+      var className = (this._svg
             ? node.className.baseVal
             : node.className).replace(trim, '');
       if (className) {
@@ -871,7 +859,7 @@ if (aight.browser.ie < 9) {
             properties.push.call(this, property);
           }
         }
-        if (typeof this._.className === "object") {
+        if (this._svg) {
           this._.className.baseVal = '' + this;
         } else {
           this._.className = '' + this;
@@ -897,7 +885,11 @@ if (aight.browser.ie < 9) {
             properties.splice.call(this, i, 1);
           }
         }
-        this._.className = '' + this;
+        if (this._svg) {
+          this._.className.baseVal = '' + this;
+        } else {
+          this._.className = '' + this;
+        }
       },
       toggle: toggle,
       toString: function toString() {
