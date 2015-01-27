@@ -18,7 +18,7 @@
     }
   }
 
-  aight.version = "2.0.1a";
+  aight.version = "2.0.2a";
   aight.browser = {
     name: nav,
     ie:   ie ? version : false,
@@ -871,7 +871,11 @@ if (aight.browser.ie < 9) {
             properties.push.call(this, property);
           }
         }
-        this._.className = '' + this;
+        if (typeof this._.className === "object") {
+          this._.className.baseVal = '' + this;
+        } else {
+          this._.className = '' + this;
+        }
       },
       contains: (function(indexOf){
         return function contains(token) {
