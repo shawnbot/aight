@@ -35,6 +35,36 @@ and other libraries that rely on them. It includes:
   need to bring your own
   [html5shiv-printshiv.js](https://github.com/aFarkas/html5shiv/#html5shiv-printshivjs).
 
+## Installation
+You have some options:
+
+1. Grab the latest from [GitHub](https://github.com/shawnbot/aight):
+    ```sh
+    curl -O https://raw.githubusercontent.com/shawnbot/aight/master/aight.js
+    # or minified:
+    curl -O https://raw.githubusercontent.com/shawnbot/aight/master/aight.min.js
+    ```
+
+1. Clone [this repository](https://github.com/shawnbot/aight) with git:
+    ```sh
+    git clone https://github.com/shawnbot/aight.git
+    ```
+
+1. Install with [bower](http://bower.io/):
+    ```sh
+    bower init # if you haven't already
+    bower install aight
+    # then copy it from the bower_components directory
+    cp bower_components/aight/aight*.js path/to/js
+    ```
+
+1. Install with [npm](https://www.npmjs.com/package/aight):
+    ```sh
+    npm install aight
+    # then copy it from the node_modules directory
+    cp node_modules/aight/aight*.js path/to/js
+    ```
+
 ## Usage
 First off, ensure that you're using the [right
 DOCTYPE](http://ejohn.org/blog/html5-doctype/) in your HTML:
