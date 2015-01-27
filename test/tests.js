@@ -154,6 +154,8 @@ module("CSS");
       svg.classList.add("foo");
       assert.equal(svg.className.baseVal, "foo", "className.baseVal is set by classList.add()");
       assert.equal(svg.classList.contains("foo"), true, "classList.contains() works for SVG elements");
+      svg.classList.remove("foo");
+      assert.equal(svg.className.baseVal, "", "className.baseVal is empty after classList.remove()");
     }
   });
 
