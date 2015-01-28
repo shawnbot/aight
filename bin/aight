@@ -1,0 +1,41 @@
+#!/usr/bin/env node
+
+var fs = require("fs"),
+    falafel = require("falafel"),
+    rw = require("rw"),
+    args = process.argv.slice(2),
+    encoding = "utf8",
+    src;
+
+if (args.length) {
+  src = args.map(function(filename) {
+    // console.warn("reading:", filename);
+    return fs.readFileSync(filename).toString();
+  })
+  .join("\n");
+} else {
+  // console.warn("reading from stdin");
+  src = rw.readFileSync("/dev/stdin", encoding);
+}
+
+var transforms = {
+    "ForInStatement": function(node) {
+      var left = node.left.source().replace(/^\s*var\s*/, ''),
+          right = node.right.source(),
+          wrapped = !!node.body.source().match(/^\s*\{/);
+      node.body.update([
+        "if (", right, ".hasOwnProperty(", left, ")) ",
+        wrapped ? "" : "{ ",
+        node.body.source(),
+        wrapped ? "" : " }",
+      ].join(""));
+    }
+  },
+  transform = function(node) {
+    if (node.type in transforms) {
+      transforms[node.type](node);
+    }
+  };
+
+var result = falafel(src, transform);
+console.log(result);

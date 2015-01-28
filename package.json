@@ -3,11 +3,15 @@
   "version": "2.0.4",
   "description": "un-suck JavaScript APIs in IE8 & 9",
   "main": "aight.js",
+  "bin": {
+    "aight": "./bin/aight"
+  },
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "uglify-js": "^2.4.16"
+    "falafel": "^0.3.1",
+    "rw": "^0.1.4"
   },
   "devDependencies": {
     "uglify-js": "^2.4.16",
@@ -15,10 +19,10 @@
     "zuul": "^1.16.5"
   },
   "scripts": {
-    "build":      "make clean all",
-    "test":       "zuul -- test/tests.js",
+    "build": "make clean all",
+    "test": "zuul -- test/tests.js",
     "test:local": "zuul --local 8080 -- test/tests.js",
-    "watch":      "watchy -w lib,src,Makefile,package.json -- npm run build",
+    "watch": "watchy -w lib,src,Makefile,package.json -- npm run build",
     "watch:test": "watchy -w *.js,test -- npm run test:local"
   },
   "repository": {
