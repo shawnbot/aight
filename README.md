@@ -125,3 +125,36 @@ using HTML elements or to try one of the following:
 
 IE9 has [great SVG support](http://blogs.msdn.com/b/ie/archive/2010/03/18/svg-in-ie9-roadmap.aspx),
 though.
+
+## aight: the command line tool
+As of version 2.0.5, aight comes with a handy command-line script that rewrites
+JavaScript (specifically, the stuff that shims and shams can't reach) to be
+IE8-friendly. Just install aight via [npm](https://www.npmjs.com/package/aight):
+
+```sh
+npm install -g aight
+# leave off the -g to install locally
+```
+
+Then run `aight` and give it a JavaScript filename (or source via stdin), and
+it will print JavaScript to stdout:
+
+```sh
+aight modern.js > ie8-friendly.js
+cat modern.js | aight > ie8-friendly.js
+```
+
+You can see how it works by piping in a simple `for..in` loop:
+
+```sh
+echo "var obj = {}; for (var key in obj) console.log(key, obj[key]);" | aight
+```
+
+which outputs (with whitespace, for clarity):
+
+```js
+var obj = {};
+for (var key in obj) if (obj.hasOwnProperty(key)) {
+  console.log(key, obj[key]);
+}
+```
