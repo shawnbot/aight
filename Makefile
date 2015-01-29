@@ -14,14 +14,29 @@ JS_FILES = \
 
 JS_COMPILER ?= uglifyjs
 
-all: aight.js aight.min.js
-# TODO aight.d3.min.js
+all: \
+	aight.js \
+	aight.min.js \
+	d3.aight.js \
+	d3.aight.min.js
 
 aight.js: $(JS_FILES)
 	cat $(JS_FILES) > $@
 
+d3.aight.js: aight.js d3/d3.js
+	cat aight.js >> $@
+	cat d3/d3.js | ./bin/aight >> $@
+	cat src/d3.aight.js >> $@
+
 %.min.js: %.js
 	$(JS_COMPILER) $< > $@
 
+d3/d3.js:
+	curl http://d3js.org/d3.v3.js > $@
+
 clean:
 	rm -f aight.js aight.min.js
+	rm -f d3.aight.js d3.aight.min.js
+
+distclean: clean
+	rm -f d3/d3.js
