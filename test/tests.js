@@ -183,4 +183,18 @@ module("CSS");
     document.body.removeChild(node);
   });
 
+
+  test("CSSOM", function(assert) {
+    var div = document.createElement("div");
+
+    div.style.setProperty("background-color", "red");
+    assert.equal(div.style.backgroundColor, "red");
+    assert.equal(div.style.getPropertyValue("background-color"), "red");
+
+    var red = div.style.removeProperty("background-color");
+    assert.equal(red, "red", "return value of removeProperty() should be 'red'");
+    assert.equal(div.style.backgroundColor, "background-color should be ''");
+    assert.equal(div.style.getPropertyValue("background-color"), "background-color should be ''");
+  });
+
 })();
