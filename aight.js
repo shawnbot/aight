@@ -5,7 +5,7 @@
  */
 ;(function(aight) {
 
-  aight.version = "2.0.5";
+  aight.version = "2.1.0";
 
   var nav = null,
       version = 0,
