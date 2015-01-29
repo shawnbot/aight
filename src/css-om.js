@@ -4,14 +4,22 @@
   // patch CSSStyleDeclaration.prototype using IE8's methods
   if (typeof CSSSDProto.setAttribute !== "undefined") {
     CSSSDProto.setProperty = function(property, value) {
-      return this.setAttribute(String(property), value /*, important */ );
+      return this.setAttribute(getAttribute(property), String(value) /*, important */ );
     };
     CSSSDProto.getPropertyValue = function(property) {
-      return this.getAttribute(property);
+      return this.getAttribute(getAttribute(property));
     };
     CSSSDProto.removeProperty = function(property) {
-      return this.removeAttribute(property);
+      var value = this.getPropertyValue(property);
+      this.removeAttribute(getAttribute(property));
+      return value;
     };
+  }
+
+  function getAttribute(property) {
+    return property.replace(/(\-[a-z])/g, function(_, bit) {
+      return bit.substr(1).toUpperCase();
+    });
   }
 
 })(CSSStyleDeclaration.prototype);
