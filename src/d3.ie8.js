@@ -1,4 +1,7 @@
-(function(exports) {
+/*
+ * IE8 shims for d3!
+ */
+;(function(exports) {
 
   aight.d3 = {
     version: aight.version
@@ -6,28 +9,28 @@
 
   var aight_mappedProperty = function(property, format, parse) {
     var read = function(p) {
-        var value = this.node().style[property];
-        return parse
-          ? parse.call(this, value, p)
-          : value;
-      },
-      write = function(p, value) {
-        if (value === null) {
-          return this.style(property, null);
-        }
-        return this.each(function() {
-          var v = (typeof value === "function")
-            ? value.apply(this, arguments)
+          var value = this.node().style.getProperty(p);
+          return parse
+            ? parse.call(this, value, p)
             : value;
-          if (v === null) {
-            this.style.removeProperty(property);
-          } else {
-            this.style[property] = format
-              ? format.call(this, v, p)
-              : v;
+        },
+        write = function(p, value) {
+          if (value === null) {
+            return this.style(property, null);
           }
-        });
-      };
+          return this.each(function() {
+            var v = (typeof value === "function")
+              ? value.apply(this, arguments)
+              : value;
+            if (v === null) {
+              this.style.removeProperty(property);
+            } else {
+              this.style.setProperty(property, format
+                ? format.call(this, v, p)
+                : v);
+            }
+          });
+        };
     return function() {
       return arguments.length > 1
         ? write.apply(this, arguments)
@@ -35,6 +38,7 @@
     };
   };
 
+  // a map of shimmed CSS properties
   var aight_d3_style = {
     "opacity": aight_mappedProperty("filter",
       function opacity_to_filter(opacity) {
@@ -50,18 +54,13 @@
   aight.d3.style = aight_d3_style;
   aight.d3.mappedProperty = aight_mappedProperty;
 
-  if (aight.browser.ie8) {
-
-    (function() {
-      var d3_style = d3.selection.prototype.style;
-      d3.selection.prototype.style = function(prop) {
-        var style = aight_d3_style.hasOwnProperty(prop)
-          ? aight_d3_style[prop]
-          : d3_style;
-        return style.apply(this, arguments);
-      };
-    })();
-
-  }
+  // shim d3.select().style() with mapped properties
+  var d3_style = d3.selection.prototype.style;
+  d3.selection.prototype.style = function(prop) {
+    var style = aight_d3_style.hasOwnProperty(prop)
+      ? aight_d3_style[prop]
+      : d3_style;
+    return style.apply(this, arguments);
+  };
 
 })(this);
