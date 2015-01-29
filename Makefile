@@ -17,16 +17,15 @@ JS_COMPILER ?= uglifyjs
 all: \
 	aight.js \
 	aight.min.js \
-	d3.aight.js \
-	d3.aight.min.js
+	d3.ie8.js \
+	d3.ie8.min.js
 
 aight.js: $(JS_FILES)
 	cat $(JS_FILES) > $@
 
-d3.aight.js: aight.js d3/d3.js
-	cat aight.js >> $@
-	cat d3/d3.js | ./bin/aight >> $@
-	cat src/d3.aight.js >> $@
+d3.ie8.js: d3/d3.js
+	cat $^ | ./bin/aight >> $@
+	cat src/d3.ie8.js >> $@
 
 %.min.js: %.js
 	$(JS_COMPILER) $< > $@
