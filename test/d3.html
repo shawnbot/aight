@@ -5,7 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <script src="../aight.js"></script>
     <script src="http://d3js.org/d3.v3.min.js"></script>
-    <!--[if IE 8]><script src="../d3.ie8.js"></script><![endif]-->
+    <!--[if IE 8]>
+    <script src="../d3/d3.ie8.js"></script>
+    <![endif]-->
     <!--[if lt IE 8]><script>
       alert("Sorry, aight doesn't work with IE7 or earlier!");
     </script><![endif]-->
@@ -170,17 +172,13 @@
 
       var bg = d3.select("#bg-color")
         .style("background-color", "red");
-      console.log("red?", bg.style("background-color"));
 
       bg = d3.select("#bg-position")
         .style("background-position", "bottom right");
-      console.log("bottom right?", bg.style("background-position"));
 
       bg = d3.select("#bg-image")
         .style("background-position", "bottom left")
         .style("background-image", "url(http://www.imagemagick.org/Usage/formats/a.png)");
-      console.log("bottom left?", bg.style("background-position"));
-      console.log("a.png?", bg.style("background-image"));
 
     })();
     </script>
