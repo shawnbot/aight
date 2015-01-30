@@ -1,4 +1,8 @@
-ui: qunit
 browsers:
-  - name: ie
-    version: 8..9
+- name: ie
+  version: 8..9
+ui: mocha-bdd
+scripts:
+- "aight.js"
+- "d3/d3.ie8.js"
+html: test/index.html
