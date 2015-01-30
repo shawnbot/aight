@@ -14,6 +14,7 @@
     "rw": "^0.1.4"
   },
   "devDependencies": {
+    "phantomjs": "^1.9.15",
     "uglify-js": "^2.4.16",
     "watchy": "^0.6.0",
     "zuul": "^1.16.5"
@@ -22,6 +23,7 @@
     "build": "make clean all",
     "test": "zuul -- test/tests.js",
     "test:local": "zuul --local 8080 -- test/tests.js",
+    "test:phantom": "zuul --phantom -- test/tests.js",
     "watch": "watchy -w lib,src,Makefile,package.json -- npm run build",
     "watch:test": "watchy -w *.js,test -- npm run test:local"
   },
