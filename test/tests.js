@@ -130,6 +130,19 @@ module("CSS");
     assert.ok(node.style.setProperty, "node.style.setProperty() is not a function");
     node.style.setProperty("background-color", "red");
     assert.equal(node.style.getPropertyValue("background-color"), "red");
+    assert.equal(node.style.backgroundColor, "red");
+    node.style.setProperty("background-color", "green");
+    assert.equal(node.style.getPropertyValue("background-color"), "green");
+    assert.equal(node.style.backgroundColor, "green");
+  });
+
+  test("style.removeProperty()", function(assert) {
+    var node = document.createElement("div");
+    node.style.setProperty("background-color", "blue");
+    var value = node.style.removeProperty("background-color");
+    assert.equal(value, "blue", "return value of removeProperty() should be 'red'");
+    assert.ok(!node.style.backgroundColor, "style.backgroundColor should be empty after removeProperty()");
+    assert.ok(!node.style.getPropertyValue("background-color"), "'background-color' should be empty after removeProperty()");
   });
 
   test("classList", function(assert) {

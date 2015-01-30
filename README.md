@@ -35,6 +35,8 @@ and other libraries that rely on them. It includes:
   need to bring your own
   [html5shiv-printshiv.js](https://github.com/aFarkas/html5shiv/#html5shiv-printshivjs).
 
+* An [IE8-friendly build](#d3-ie8) of [D3](http://d3js.org).
+
 ## Installation
 You have some options:
 
@@ -87,7 +89,7 @@ comment](http://www.quirksmode.org/css/condcom.html) inside the `<head>`:
 
 ```html
 <!--[if lte IE 9]>
-<script type="text/javascript" src="aight.min.js"></script>
+<script src="aight.min.js"></script>
 <![endif]-->
 ```
 
@@ -109,6 +111,26 @@ Bringing it all together, you end up with:
 ```
 
 For your convenience, this snippet is included with aight in `template.html`.
+
+## D3 for IE8 <a name="d3-ie8"></a>
+IE8 barfs on [some parts](https://github.com/mbostock/d3/pull/2209) of
+[D3](http://d3js.org)'s JavaScript. The included `d3.ie8.js` and minified
+`d3.ie8.min.js` are IE8-friendly builds of [d3.v3.js](http://d3js.org/d3.v3.js)
+with shams for some CSS properties, namely `opacity`. You'll need to tweak your
+HTML to use these, e.g.:
+
+```html
+<!--[if lte IE 9]><script src="aight.js"></script><![endif]-->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<!--[if IE 8]><script src="d3.ie8.js"></script><![endif]-->
+```
+
+Since conditional comments are inaccessible to other browsers, we
+have to download the "modern" d3.js (which will throw errors in IE8)
+*and* the shimmed one (which won't). It's an imperfect solution,
+obviously. You *may* serve `d3.ie8.js` to modern browsers, but there
+will probably be performance implications depending on how you use
+D3.
 
 ## What about SVG? <a name="svg"></a>
 Shimming SVG support is tricky business. If you need to support IE8, my
