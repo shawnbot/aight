@@ -121,9 +121,16 @@ HTML to use these, e.g.:
 
 ```html
 <!--[if lte IE 9]><script src="aight.js"></script><![endif]-->
-<!--[if gte IE 9]><script src="d3.v3.js"></script><![endif]-->
+<script src="http://d3js.org/d3.v3.min.js"></script>
 <!--[if IE 8]><script src="d3.ie8.js"></script><![endif]-->
 ```
+
+Since conditional comments are inaccessible to other browsers, we
+have to download the "modern" d3.js (which will throw errors in IE8)
+*and* the shimmed one (which won't). It's an imperfect solution,
+obviously. You *may* serve `d3.ie8.js` to modern browsers, but there
+will probably be performance implications depending on how you use
+D3.
 
 ## What about SVG? <a name="svg"></a>
 Shimming SVG support is tricky business. If you need to support IE8, my
