@@ -9546,7 +9546,6 @@ for (priority in name) if (__hasOwnProperty(priority)) { this.style(priority, na
             var v = (typeof value === "function")
               ? value.apply(this, arguments)
               : value;
-            console.log("style[", property, "] = ", format ? format(v) : v);
             if (v === null) {
               this.style.removeProperty(property);
             } else {
