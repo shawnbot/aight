@@ -7,10 +7,10 @@ JS_FILES = \
 		lib/dom4/src/dom4.js \
 		src/css-om.js \
 		src/createElementNS.js \
+		lib/html5shiv/src/html5shiv.js \
 	src/end.js \
 	lib/es5-shim/es5-shim.js \
-	lib/es5-shim/es5-sham.js \
-	lib/html5shiv/src/html5shiv.js
+	lib/es5-shim/es5-sham.js
 
 JS_COMPILER ?= uglifyjs
 
