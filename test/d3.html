@@ -41,7 +41,9 @@
         background: red;
       }
 
-      #opacity > span {
+      #opacity span {
+        /* see: <http://www.sitepoint.com/web-foundations/internet-explorer-haslayout-property/> */
+        display: inline-block;
       }
 
     </style>
@@ -195,8 +197,8 @@
           .data(d3.range(0, 1.1, .1))
           .enter()
           .append("span")
-          .style("opacity", function(d) { return d; })
-          .text(function(d) { return d * 100 + "%"; });
+            .style("opacity", function(d) { return d; })
+            .text(function(d) { return d * 100 + "%"; });
 
     })();
     </script>
