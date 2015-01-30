@@ -16,7 +16,9 @@
       return this.getAttribute(getAttribute(property)) || null;
     };
     CSSSDProto.removeProperty = function(property) {
-      return this.removeAttribute(getAttribute(property));
+      var value = this.getPropertyValue(property);
+      this.removeAttribute(getAttribute(property));
+      return value;
     };
   }
 
