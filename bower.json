@@ -1,7 +1,7 @@
 {
   "name": "aight",
   "main": "./aight.js",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "homepage": "https://github.com/shawnbot/aight",
   "authors": [
     "Shawn Allen <shawn.allen@hush.com>"

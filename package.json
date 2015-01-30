@@ -1,6 +1,6 @@
 {
   "name": "aight",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "un-suck JavaScript APIs in IE8 & 9",
   "main": "aight.js",
   "bin": {

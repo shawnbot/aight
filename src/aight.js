@@ -1,5 +1,5 @@
 
-  aight.version = "2.1.0";
+  aight.version = "2.1.1";
 
   var nav = null,
       version = 0,
