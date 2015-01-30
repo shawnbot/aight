@@ -1,14 +1,7 @@
-// zuul browserifies aight.js, so we need to do this:
-if (typeof require === "function") {
-  require("../aight");
-}
-
-var module = QUnit.module,
-    test = QUnit.test,
+var assert = require("assert"),
     SVG_NS = "http://www.w3.org/2000/svg";
 
-module("ES5");
-(function() {
+describe("ES5", function() {
 
   var asc = function(a, b) {
         return a > b ? 1 : a < b ? -1 : 0;
@@ -17,17 +10,19 @@ module("ES5");
         return a > b ? -1 : a < b ? 1 : 0;
       };
 
-  test("Array.prototype.sort", function(assert) {
+  it("has Array#sort", function() {
+    assert.ok(Array.prototype.sort, "missing Array.prototype.sort");
     var list = [1, 2, 3],
         sorted = list.sort(desc);
     assert.strictEqual(list, sorted, "sort() should return this Array");
     assert.deepEqual(list, [3, 2, 1]);
   });
 
-  test("Array.prototype.forEach", function(assert) {
+  it("has Array#forEach", function() {
+    // expect(13);
+    assert.ok(Array.prototype.forEach, "missing Array.prototype.forEach");
     var letters = ["a", "b", "c"],
         context = {foo: "bar"};
-    expect(12);
     letters.forEach(function(letter, i, list) {
       assert.ok(typeof letter === "string");
       assert.ok(typeof i === "number");
@@ -36,19 +31,23 @@ module("ES5");
     }, context);
   });
 
-  /*
-  test("Array.prototype.every", function(assert) {
+  it("has Array#every", function() {
+    assert.ok(Array.prototype.every, "missing Array.prototype.every");
+    // TODO
   });
 
-  test("Array.prototype.some", function(assert) {
+  it("has Array#some", function() {
+    assert.ok(Array.prototype.some, "missing Array.prototype.some");
+    // TODO
   });
 
-  test("Array.prototype.filter", function(assert) {
+  it("has Array#filter", function() {
+    assert.ok(Array.prototype.filter, "missing Array.prototype.filter");
+    // TODO
   });
-  */
 
-  test("Array.prototype.map", function(assert) {
-    expect(4);
+  it("has Array#map", function() {
+    // expect(4);
     var letters = ["a", "b", "c"].map(function(letter) {
       assert.ok(letter);
       return letter.toUpperCase();
@@ -56,21 +55,20 @@ module("ES5");
     assert.deepEqual(letters, ["A", "B", "C"], "not uppercased: " + JSON.stringify(letters));
   });
 
-  test("Array.prototype.reduce", function(assert) {
-    expect(5);
+  it("has Array#reduce", function() {
+    // expect(5);
     assert.strictEqual([3, 0, 1, 2].reduce(function(memo, n) {
       assert.ok(typeof n === "number");
       return memo + n;
     }, 0), 6);
   });
 
-})();
+});
 
 
-module("DOM");
-(function() {
+describe("DOM", function() {
 
-  test("textContent", function(assert) {
+  it("has Element#textContent", function() {
     var node = document.createElement("span");
     node.textContent = "foo";
     assert.equal(node.textContent, "foo");
@@ -82,7 +80,7 @@ module("DOM");
     assert.equal(node.firstChild.textContent, "foo", "first child's textContent should be 'foo'");
   });
 
-  test("innerText", function(assert) {
+  it("has Element#innerText", function() {
     var node = document.createElement("span");
     node.textContent = "bar";
     assert.equal(node.innerText, "bar");
@@ -94,38 +92,42 @@ module("DOM");
     assert.equal(node.firstChild.textContent, "bar", "first child's textContent should be 'bar'");
   });
 
-  test("createElementNS", function(assert) {
+  it("has document.createElementNS", function() {
     try {
-      var node = document.createElementNS("span", null);
+      var node = document.createElementNS("span", undefined);
       assert.ok(node, "no node created by createElementNS");
     } catch (err) {
-      assert.ok(err.message.match(/does not support namespaces/), "createElementNS() throws the wrong error");
+      // XXX PhantomJS throws exceptions here, but nobody else does
+      if (typeof DOMException !== "undefined" && err.code === DOMException.INVALID_CHARACTER_ERR) {
+        console.warn("your browser throws exceptions when calling createElementNS() without a namespace");
+      } else {
+        assert.ok(err.message.match(/does not support namespaces/), "createElementNS() throws the wrong error: " + err.message);
+      }
     }
   });
 
-})();
+});
 
-module("CSS");
-(function() {
+describe("CSS", function() {
 
-  test("style properties", function(assert) {
+  it("style properties", function() {
     var node = document.createElement("div");
     node.setAttribute("style", "color: red");
     assert.equal(node.style.color, "red");
     node.style.color = "green";
     assert.equal(node.getAttribute("style")
       .toLowerCase()
-      .replace(/;$/, ""), "color: green");
+      .replace(/;\s*$/, ""), "color: green");
   });
 
-  test("style.getPropertyValue()", function(assert) {
+  it("style.getPropertyValue()", function() {
     var node = document.createElement("div");
     assert.ok(node.style.getPropertyValue, "node.style.getPropertyValue() is not a function");
     node.style.color = "red";
     assert.equal(node.style.getPropertyValue("color"), "red");
   });
 
-  test("style.setProperty()", function(assert) {
+  it("style.setProperty()", function() {
     var node = document.createElement("div");
     assert.ok(node.style.setProperty, "node.style.setProperty() is not a function");
     node.style.setProperty("background-color", "red");
@@ -136,7 +138,7 @@ module("CSS");
     assert.equal(node.style.backgroundColor, "green");
   });
 
-  test("style.removeProperty()", function(assert) {
+  it("style.removeProperty()", function() {
     var node = document.createElement("div");
     node.style.setProperty("background-color", "blue");
     var value = node.style.removeProperty("background-color");
@@ -145,7 +147,7 @@ module("CSS");
     assert.ok(!node.style.getPropertyValue("background-color"), "'background-color' should be empty after removeProperty()");
   });
 
-  test("classList", function(assert) {
+  it("has Element#classList", function() {
     var node = document.createElement("div");
     assert.ok(node.classList, "element has classList property");
     node.classList.add("foo");
@@ -172,7 +174,7 @@ module("CSS");
     }
   });
 
-  test("window.getComputedStyle()", function(assert) {
+  it("window.getComputedStyle()", function() {
     assert.ok(window.getComputedStyle, "window.getComputedStyle() is not a function");
 
     var node = document.createElement("div");
@@ -196,4 +198,40 @@ module("CSS");
     document.body.removeChild(node);
   });
 
-})();
+});
+
+describe("IE", function() {
+  var ie = (navigator.appName === "Microsoft Internet Explorer"),
+      ie8 = ie && navigator.userAgent.match(/MSIE 8/);
+
+  it("knows how to set aight.browser", function() {
+    if (ie) {
+      assert.ok(aight.browser.ie, "aight.browser.ie should be true");
+      if (ie8) {
+        assert.ok(aight.browser.ie8, "aight.browser.ie8 should be true");
+      } else {
+        assert.ok(!aight.browser.ie8, "aight.browser.ie8 should be false");
+      }
+    } else {
+      assert.ok(!aight.browser.ie, "aight.browser.ie should not be true");
+    }
+  });
+
+  if (typeof d3 === "object") {
+    it("does aight.d3 right", function() {
+      assert.ok(aight.d3, "aight.d3 should exist");
+
+      if (ie8) {
+        var div = d3.select(document.createElement("div"));
+        div.style("opacity", .5);
+        assert.ok(div.property("style").filter, "div should have a filter style");
+        assert.equal(+div.style("opacity"), .5);
+      } else {
+        assert.ok(!aight.d3.style.opacity, "no opacity shim should exist outside of IE8");
+      }
+    });
+  } else {
+    console.warn("d3 not loaded; skipping d3 tests");
+  }
+
+});
