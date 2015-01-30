@@ -17,13 +17,13 @@ JS_COMPILER ?= uglifyjs
 all: \
 	aight.js \
 	aight.min.js \
-	d3.ie8.js \
-	d3.ie8.min.js
+	d3/d3.ie8.js \
+	d3/d3.ie8.min.js
 
 aight.js: $(JS_FILES)
 	cat $(JS_FILES) > $@
 
-d3.ie8.js: d3/d3.js
+d3/d3.ie8.js: d3/d3.js
 	cat $^ | ./bin/aight >> $@
 	cat src/d3.ie8.js >> $@
 
@@ -35,7 +35,7 @@ d3/d3.js:
 
 clean:
 	rm -f aight.js aight.min.js
-	rm -f d3.ie8.js d3.ie8.min.js
+	rm -f d3/d3.ie8.js d3/d3.ie8.min.js
 
 distclean: clean
 	rm -f d3/d3.js
