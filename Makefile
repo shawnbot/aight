@@ -35,7 +35,7 @@ d3/d3.js:
 
 clean:
 	rm -f aight.js aight.min.js
-	rm -f d3.aight.js d3.aight.min.js
+	rm -f d3.ie8.js d3.ie8.min.js
 
 distclean: clean
 	rm -f d3/d3.js
