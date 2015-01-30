@@ -24,10 +24,14 @@ var transforms = {
           right = node.right.source(),
           wrapped = !!node.body.source().match(/^\s*\{/);
       node.body.update([
-        "if (", right, ".hasOwnProperty(", left, ")) ",
+        "if (__hasOwnProperty(", left, ")) ",
         wrapped ? "" : "{ ",
         node.body.source(),
         wrapped ? "" : " }",
+      ].join(""));
+      node.update([
+        "\nvar __hasOwnProperty = Object.prototype.hasOwnProperty.bind(", right, ");\n",
+        node.source()
       ].join(""));
     }
   },
