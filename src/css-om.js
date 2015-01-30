@@ -13,7 +13,7 @@
       return this.setAttribute(getAttribute(property), String(value) /*, important */ );
     };
     CSSSDProto.getPropertyValue = function(property) {
-      return this.getAttribute(getAttribute(property));
+      return this.getAttribute(getAttribute(property)) || null;
     };
     CSSSDProto.removeProperty = function(property) {
       return this.removeAttribute(getAttribute(property));
