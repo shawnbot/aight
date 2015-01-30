@@ -9527,9 +9527,7 @@ for (priority in name) if (__hasOwnProperty(priority)) { this.style(priority, na
  */
 ;(function(exports) {
 
-  aight.d3 = {
-    version: aight.version
-  };
+  aight.d3 = {};
 
   var aight_mappedProperty = function(property, format, parse) {
     var read = function(_property) {
@@ -9566,17 +9564,7 @@ for (priority in name) if (__hasOwnProperty(priority)) { this.style(priority, na
   };
 
   // a map of shimmed CSS properties
-  var aight_d3_style = {
-    "opacity": aight_mappedProperty("filter",
-      function opacity_to_filter(opacity) {
-        if (isNaN(opacity)) opacity = 100;
-        return ["alpha(opacity=", Math.round(opacity * 100), ")"].join("");
-      }, 
-      function filter_to_opacity(filter) {
-        var match = (filter || "").match(/alpha\(opacity=(\d+)\)/);
-        return match ? match[1] / 100 : 1;
-      })
-  };
+  var aight_d3_style = {};
 
   aight.d3.style = aight_d3_style;
   aight.d3.mappedProperty = aight_mappedProperty;
@@ -9589,5 +9577,17 @@ for (priority in name) if (__hasOwnProperty(priority)) { this.style(priority, na
       : d3_style;
     return style.apply(this, arguments);
   };
+
+  if (aight.browser.ie8) {
+    aight_d3_style.opacity = aight_mappedProperty("filter",
+      function opacity_to_filter(opacity) {
+        if (isNaN(opacity)) opacity = 100;
+        return ["alpha(opacity=", Math.round(opacity * 100), ")"].join("");
+      },
+      function filter_to_opacity(filter) {
+        var match = (filter || "").match(/alpha\(opacity=(\d+)\)/);
+        return match ? match[1] / 100 : 1;
+      });
+  }
 
 })(this);
