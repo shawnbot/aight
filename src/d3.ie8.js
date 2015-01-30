@@ -8,13 +8,13 @@
   };
 
   var aight_mappedProperty = function(property, format, parse) {
-    var read = function(p) {
-          var value = this.node().style.getProperty(p);
+    var read = function(_property) {
+          var value = this.node().style.getProperty(property);
           return parse
-            ? parse.call(this, value, p)
+            ? parse.call(this, value, _property)
             : value;
         },
-        write = function(p, value) {
+        write = function(_property, value) {
           if (value === null) {
             return this.style(property, null);
           }
@@ -25,16 +25,19 @@
             if (v === null) {
               this.style.removeProperty(property);
             } else {
-              this.style.setProperty(property, format
-                ? format.call(this, v, p)
-                : v);
+              this.style.setProperty(
+                property,
+                format
+                  ? format.call(this, v, _property)
+                  : v
+              );
             }
           });
         };
     return function() {
       return arguments.length > 1
         ? write.apply(this, arguments)
-        : read.call(this);
+        : read.apply(this, arguments);
     };
   };
 
