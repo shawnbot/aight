@@ -4,9 +4,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <script src="../aight.js"></script>
-    <!-- <script>aight.browser.ie8 = true;</script> -->
     <script src="http://d3js.org/d3.v3.min.js"></script>
-    <script src="../aight.d3.js"></script>
+    <!--[if IE 8]><script src="../d3.ie8.js"></script><![endif]-->
+    <!--[if lt IE 8]><script>
+      alert("Sorry, aight doesn't work with IE7 or earlier!");
+    </script><![endif]-->
     <style type="text/css">
 
       body {
