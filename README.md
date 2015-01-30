@@ -115,9 +115,9 @@ For your convenience, this snippet is included with aight in `template.html`.
 ## D3 for IE8 <a name="d3-ie8"></a>
 IE8 barfs on [some parts](https://github.com/mbostock/d3/pull/2209) of
 [D3](http://d3js.org)'s JavaScript. The included `d3.ie8.js` and minified
-`d3.ie8.min.js` are IE8-friendly builds of [d3.v3.js](http://d3js.org/d3.v3.js)
-with shams for some CSS properties, namely `opacity`. You'll need to tweak your
-HTML to use these, e.g.:
+`d3.ie8.min.js` (in the `d3` directory) are IE8-friendly builds of
+[d3.v3.js](http://d3js.org/d3.v3.js) with shams for some CSS properties, namely
+`opacity`. You'll need to tweak your HTML to use these, e.g.:
 
 ```html
 <!--[if lte IE 9]><script src="aight.js"></script><![endif]-->
