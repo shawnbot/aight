@@ -40,7 +40,8 @@ and other libraries that rely on them. It includes:
 ## Installation
 You have some options:
 
-1. Grab the latest from [GitHub](https://github.com/shawnbot/aight):
+1. Download [the latest release](https://github.com/shawnbot/aight/releases)
+or grab the latest from [GitHub](https://github.com/shawnbot/aight):
     ```sh
     curl -O https://raw.githubusercontent.com/shawnbot/aight/master/aight.js
     # or minified:
