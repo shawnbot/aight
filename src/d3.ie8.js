@@ -7,7 +7,7 @@
 
   var aight_mappedProperty = function(property, format, parse) {
     var read = function(_property) {
-          var value = this.node().style.getProperty(property);
+          var value = this.style.getPropertyValue(property);
           return parse
             ? parse.call(this, value, _property)
             : value;
@@ -35,7 +35,7 @@
     return function() {
       return arguments.length > 1
         ? write.apply(this, arguments)
-        : read.apply(this, arguments);
+        : read.apply(this.node(), arguments);
     };
   };
 
