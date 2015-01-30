@@ -54,14 +54,18 @@
     return style.apply(this, arguments);
   };
 
-  if (aight.browser.ie8) {
+  var hasOpacity = function() {
+    return "opacity" in document.createElement("div").style;
+  };
+
+  if (!hasOpacity()) {
     aight_d3_style.opacity = aight_mappedProperty("filter",
       function opacity_to_filter(opacity) {
-        if (isNaN(opacity)) opacity = 100;
+        if (isNaN(opacity)) opacity = 1;
         return ["alpha(opacity=", Math.round(opacity * 100), ")"].join("");
       },
       function filter_to_opacity(filter) {
-        var match = (filter || "").match(/alpha\(opacity=(\d+)\)/);
+        var match = (filter || "").match(/opacity=(\d+)/);
         return match ? match[1] / 100 : 1;
       });
   }
