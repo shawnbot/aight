@@ -1,6 +1,6 @@
 # <img alt="aight" src="https://raw.github.com/shawnbot/aight/master/assets/aight.png">
 
-<img src="https://travis-ci.org/shawnbot/aight.svg" alt="travis build status">
+<img src="https://travis-ci.org/shawnbot/aight.svg" alt="travis build status"> [![CDNJS](https://img.shields.io/cdnjs/v/aight.svg)](https://cdnjs.com/libraries/aight)
 
 Aight is a collection of shims and polyfills that get IE8 (and IE9) up to speed
 with a bare minimum of HTML5 compatibility, providing all of the interfaces
